@@ -1,7 +1,4 @@
-ALL: hello_p
-CFLAGS = -g -O0
-CPPFLAGS =
-CLEANFILES = hello_p
+-include /home/user/petsc/petscdir.mk
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

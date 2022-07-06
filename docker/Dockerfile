@@ -24,7 +24,7 @@ RUN git clone https://github.com/constracktor/petsc_project.git
 # install petsc
 RUN git clone -b release https://gitlab.com/petsc/petsc.git/ && cd petsc && git pull
 # configure  and compile petsc
-RUN cd petsc && ./configure --download-openmpi --download-fblaslapack && make all check
+RUN cd petsc && ./configure --download-openmpi --download-fblaslapack --with-cc=vendor_mpicc --with-fc=vendor_mpif90 && make all check
 # export petsc
 RUN export PETSC_DIR=$HOME/petsc && export PETSC_ARCH=petsc-arch
 
