@@ -1,11 +1,12 @@
 # HOW TO
 # Build image:
 # sudo docker build . -f docker/Dockerfile -t petsc_image
+#
 # Run container inside petsc_project folder:
 # sudo docker run -it --rm --user user --name petsc_container petsc_image
 #
+# Run Code:
 #
-# sudo docker run -it --rm --user user --mount type=bind,source="$(pwd)",target=/usr/src/petsc_project --name petsc_container petsc_image
 
 FROM ubuntu:22.04
 
@@ -26,3 +27,8 @@ RUN git clone -b release https://gitlab.com/petsc/petsc.git/ && cd petsc && git 
 RUN cd petsc && ./configure --download-openmpi --download-fblaslapack && make all check
 # export petsc
 RUN export PETSC_DIR=$HOME/petsc && export PETSC_ARCH=petsc-arch
+
+
+# OPTIONAL:
+# mount folder
+# sudo docker run -it --rm --user user --mount type=bind,source="$(pwd)",target=/usr/src/petsc_project --name petsc_container petsc_image
