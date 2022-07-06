@@ -3,8 +3,8 @@ CFLAGS = -g -O0
 CPPFLAGS =
 CLEANFILES = hello_p
 
-include ${PETSC_DIR}/lib/petsc/conf/conf/variables
-include ${PETSC_DIR}/lib/petsc/conf/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
 hello_p: hello_p.o chkopts
 	-${CLINKER} -o hello_p hello_p.o ${PETSC_LIB}
