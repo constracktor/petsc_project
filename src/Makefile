@@ -1,20 +1,13 @@
-include ../../../../petscdir.mk
+PETSC_DIR = $(PETSC_HOME)
+PETSC_ARCH = bgq-power
+ALL: hello_p
+CFLAGS = -g -O0
+CPPFLAGS =
+CLEANFILES = hello_p
 
-CFLAGS             =
-FFLAGS             =
-CPPFLAGS           =
-FPPFLAGS           =
-LOCDIR             =   /home/user/petsc_project/src
-EXAMPLESC          =   hello_p.c
-EXAMPLESF          =
-MANSEC             =
-CLEANFILES         =
-NP                 =
+include ${PETSC_DIR}/conf/variables
+include ${PETSC_DIR}/conf/rules
 
-include ${PETSC_DIR}/petsc/conf/variables
-include ${PETSC_DIR}/petsc/conf/rules
-include ${PETSC_DIR}/petsc/conf/test
-
-hello_p: hello_p.o  chkopts
-	-${CLINKER} -o hello_p hello_p.o  ${PETSC_SYS_LIB}
+hello_p: hello_p.o chkopts
+	-${CLINKER} -o hello_p hello_p.o ${PETSC_LIB}
 	${RM} hello_p.o
