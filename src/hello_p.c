@@ -1,9 +1,17 @@
-#include 'petsc.h'
+#include "petsc.h"
 
-int main( int argc, char *argv[] )
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **args)
 {
-  PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
-  PetscPrintf(PETSC_COMM_WORLD,”Hello World\n”);
-  PetscFinalize();
-  return 0;
+   PetscErrorCode ierr;
+   PetscMPIInt    rank;
+
+   PetscInitialize(&argc,&args,(char *)0,PETSC_NULL);
+
+   MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
+   ierr = PetscPrintf(PETSC_COMM_SELF,"Hello by procs %d!\n", rank);CHKERRQ(ierr);
+
+   ierr = PetscFinalize(); CHKERRQ(ierr);
+   return 0;
 }
