@@ -5,7 +5,9 @@ int main() {
     FILE    *textfile;
     char    line[MAX_LINE_LENGTH];
     float value;
-    int length_training = 100 * 1000;
+    const int length_training = 100 * 1000;
+
+    float training_input[length_training]
 
     textfile = fopen("data/training/training_input.txt", "r");
     if(textfile == NULL)
@@ -15,6 +17,7 @@ int main() {
     {
       fscanf(textfile,"%f",&value);
       printf("index %d: %f \n", i, value);
+      training_input[i] = value;
     }
 
     fclose(textfile);
