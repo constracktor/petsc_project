@@ -10,8 +10,8 @@ int main() {
     if(textfile == NULL)
         return 1;
 
-    while(fgets(line, MAX_LINE_LENGTH, textfile)){
-        printf("%f",(float)*line);
+    while(fgets(&line, MAX_LINE_LENGTH, textfile)){
+        printf("%.10f",line);
     }
 
     fclose(textfile);
