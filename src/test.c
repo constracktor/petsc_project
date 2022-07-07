@@ -5,14 +5,16 @@ int main() {
     FILE    *textfile;
     char    line[MAX_LINE_LENGTH];
     float value;
+    int length_training = 1000;
 
     textfile = fopen("data/training/training_input.txt", "r");
     if(textfile == NULL)
         return 1;
 
-    while(fgets(&line, MAX_LINE_LENGTH, textfile)){
-        fscanf(textfile,"%f",&value);
-        printf("%f \n", value);
+    for(int i = 0, i < length_training, i++)
+    {
+      fscanf(textfile,"%f",&value);
+      printf("index %d: %f \n", i, value);
     }
 
     fclose(textfile);
