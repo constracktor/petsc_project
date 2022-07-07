@@ -11,7 +11,7 @@ int main() {
     if(textfile == NULL)
         return 1;
 
-    for(int i = 0, i < length_training, i++)
+    for(int i = 0; i < length_training; i++)
     {
       fscanf(textfile,"%f",&value);
       printf("index %d: %f \n", i, value);
