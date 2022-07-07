@@ -5,7 +5,7 @@ int main() {
     FILE    *textfile;
     char    line[MAX_LINE_LENGTH];
     float value;
-    int length_training = 1000;
+    int length_training = 100 * 1000;
 
     textfile = fopen("data/training/training_input.txt", "r");
     if(textfile == NULL)
