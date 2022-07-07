@@ -10,6 +10,9 @@
 #
 # Run Code:
 # mpirun -n 4 hello_p
+#
+# Update Repository:
+# git add . && git commit -m "comment" && git push
 
 FROM ubuntu:22.04
 
