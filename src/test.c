@@ -54,7 +54,7 @@ int main() {
     {
       printf("index %d: input = %f output = %f\n", i, test_input[i], test_output[i]);
     }
-
+    printf("test")
 
     return 0;
 }
