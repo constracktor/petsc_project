@@ -7,7 +7,7 @@ int main() {
     float value;
     const int length_training = 100 * 1000;
 
-    float training_input[length_training]
+    float training_input[length_training];
 
     textfile = fopen("data/training/training_input.txt", "r");
     if(textfile == NULL)
