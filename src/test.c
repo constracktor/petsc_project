@@ -20,9 +20,9 @@ int main() {
     test_input_file = fopen("data/test/test_input_3.txt", "r");
     test_output_file = fopen("data/test/test_output_3.txt", "r");
 
-    if(training_input_file == NULL || training_output_file == NULL || test_input_file == NULL || test_output_file)
+    if(training_input_file == NULL || training_output_file == NULL || test_input_file == NULL || test_output_file == NULL)
     {
-      printf("return 1");
+      printf("return 1\n");
       return 1;
     }
     // load training data
@@ -56,6 +56,6 @@ int main() {
       printf("index %d: input = %f output = %f\n", i, test_input[i], test_output[i]);
     }
 
-    printf("return 0");
+    printf("return 0\n");
     return 0;
 }
