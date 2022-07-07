@@ -11,7 +11,7 @@ int main() {
         return 1;
 
     while(fgets(line, MAX_LINE_LENGTH, textfile)){
-        printf(line);
+        printf((float)line);
     }
 
     fclose(textfile);
