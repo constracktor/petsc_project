@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <iostream>
 #define MAX_LINE_LENGTH 1000
 
 int main() {
@@ -14,7 +14,7 @@ int main() {
     while(fgets(&line, MAX_LINE_LENGTH, textfile)){
         printf(line);
         fscanf(textfile,"0.7f",&value);
-        std::cout << value << std::endl
+        std::cout << value << std::endl;
         printf("%0.7f \n", value);
     }
 
