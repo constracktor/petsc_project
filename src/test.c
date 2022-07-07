@@ -13,7 +13,7 @@ int main() {
 
     while(fgets(&line, MAX_LINE_LENGTH, textfile)){
         printf(line);
-        fscanf(testfile,"0.7f",&value);
+        fscanf(textfile,"0.7f",&value);
         printf("%0.7f \n", value);
     }
 
