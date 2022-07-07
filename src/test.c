@@ -5,14 +5,16 @@
 int main() {
     FILE    *textfile;
     char    line[MAX_LINE_LENGTH];
+    double value;
 
     textfile = fopen("data/training/training_input.txt", "r");
     if(textfile == NULL)
         return 1;
 
-    double line;
     while(fgets(&line, MAX_LINE_LENGTH, textfile)){
-        printf("%.10d",atof(line));
+        printf(line);
+        fscanf(testfile,"0.7f",&value)
+        print("%0.7f \n", value)
     }
 
     fclose(textfile);
