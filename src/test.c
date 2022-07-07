@@ -22,7 +22,7 @@ int main() {
 
     if(training_input_file == NULL || training_output_file == NULL || test_input_file == NULL || test_output_file)
     {
-      printf("Exit Code 1")
+      printf("return 1"),
       return 1;
     }
     // load training data
@@ -55,7 +55,7 @@ int main() {
     {
       printf("index %d: input = %f output = %f\n", i, test_input[i], test_output[i]);
     }
-    printf("test");
 
+    printf("return 0");
     return 0;
 }
