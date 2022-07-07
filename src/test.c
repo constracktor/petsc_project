@@ -1,5 +1,4 @@
 #include <stdio.h>
-#define MAX_LINE_LENGTH 1000
 
 int main() {
     FILE    *training_input_file;
@@ -26,7 +25,7 @@ int main() {
       fscanf(training_output_file,"%f",&value);
       training_output[i] = value;
     }
-    
+
     fclose(training_input_file);
     fclose(training_output_file);
 
