@@ -14,6 +14,7 @@ int main() {
     while(fgets(&line, MAX_LINE_LENGTH, textfile)){
         printf(line);
         fscanf(textfile,"0.7f",&value);
+        std::cout << value << std::endl
         printf("%0.7f \n", value);
     }
 
