@@ -10,8 +10,9 @@ int main() {
     if(textfile == NULL)
         return 1;
 
+    double line;
     while(fgets(&line, MAX_LINE_LENGTH, textfile)){
-        printf("%.10f",atof(line));
+        printf("%.10d",atof(line));
     }
 
     fclose(textfile);
