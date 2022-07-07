@@ -11,7 +11,7 @@ int main() {
         return 1;
 
     while(fgets(&line, MAX_LINE_LENGTH, textfile)){
-        printf("%.10f",line);
+        printf("%.10f",atof(line);
     }
 
     fclose(textfile);
