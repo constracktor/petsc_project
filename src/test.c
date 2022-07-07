@@ -22,6 +22,7 @@ int main() {
 
     if(training_input_file == NULL || training_output_file == NULL || test_input_file == NULL || test_output_file)
     {
+      printf("Exit Code 1")
       return 1;
     }
     // load training data
