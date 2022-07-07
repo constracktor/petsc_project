@@ -12,7 +12,7 @@ int main() {
 
     while(fgets(&line, MAX_LINE_LENGTH, textfile)){
         printf(line);
-        fscanf(textfile,&value);
+        fscanf(textfile,"%f",&value);
         printf("%f \n", value);
     }
 
