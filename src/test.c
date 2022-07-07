@@ -2,24 +2,39 @@
 #define MAX_LINE_LENGTH 1000
 
 int main() {
-    FILE    *textfile;
-    char    line[MAX_LINE_LENGTH];
-    float value;
+    FILE    *training_input_file;
+    FILE    *training_output_file;
+
+    float   value;
     const int length_training = 100 * 1000;
 
-    float training_input[length_training];
+    float   training_input[length_training];
+    float   training_output[length_training];
 
-    textfile = fopen("data/training/training_input.txt", "r");
-    if(textfile == NULL)
-        return 1;
+    training_input_file = fopen("data/training/training_input.txt", "r");
+    training_output_file = fopen("data/training/training_output.txt", "r");
+
+    if(training_input_file == NULL || training_output_file == NULL)
+    {
+      return 1;
+    }
 
     for(int i = 0; i < length_training; i++)
     {
-      fscanf(textfile,"%f",&value);
-      printf("index %d: %f \n", i, value);
+      fscanf(training_input_file,"%f",&value);
       training_input[i] = value;
+      fscanf(training_output_file,"%f",&value);
+      training_output[i] = value;
+    }
+    
+    fclose(training_input_file);
+    fclose(training_output_file);
+
+    for(int i = 0; i < length_training; i++)
+    {
+      printf("index %d: input = %f output = %f\n", i, training_input[i], training_output[i]);
     }
 
-    fclose(textfile);
+
     return 0;
 }
