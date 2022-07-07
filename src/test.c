@@ -12,8 +12,8 @@ int main() {
 
     while(fgets(&line, MAX_LINE_LENGTH, textfile)){
         printf(line);
-        fscanf(textfile,"0.7f",&value);
-        printf("%d \n", value);
+        fscanf(textfile,&value);
+        printf("%f \n", value);
     }
 
     fclose(textfile);
