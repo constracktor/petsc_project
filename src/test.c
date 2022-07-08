@@ -1,4 +1,5 @@
 #include <stdio.h>
+typedef float real;
 
 int main() {
     FILE    *training_input_file;
@@ -6,14 +7,14 @@ int main() {
     FILE    *test_input_file;
     FILE    *test_output_file;
 
-    float   value;
+    real   value;
     const int length_training = 100 * 1000;
     const int length_test = 5 * 1000;
 
-    float   training_input[length_training];
-    float   training_output[length_training];
-    float   test_input[length_test];
-    float   test_output[length_test];
+    real   training_input[length_training];
+    real   training_output[length_training];
+    real   test_input[length_test];
+    real   test_output[length_test];
 
     training_input_file = fopen("data/training/training_input.txt", "r");
     training_output_file = fopen("data/training/training_output.txt", "r");
