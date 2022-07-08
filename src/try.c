@@ -13,7 +13,7 @@ int main(int argc,char **args)
   FILE    *test_input_file;
   FILE    *test_output_file;
 
-  float   value;
+  real    value;
   const int length_training = 100 * 1000;
   const int length_test = 5 * 1000;
 
