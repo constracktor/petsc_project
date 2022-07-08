@@ -1,5 +1,5 @@
 #include <stdio.h>
-typedef double real;
+typedef float real;
 
 int main() {
     FILE    *training_input_file;
