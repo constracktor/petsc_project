@@ -14,13 +14,13 @@ int main(int argc,char **args)
   FILE    *test_output_file;
 
   float   value;
-  const int n_training = 100 * 1000;
-  const int n_test = 5 * 1000;
+  const int length_training = 100 * 1000;
+  const int length_test = 5 * 1000;
 
-  float   training_input[n_training];
-  float   training_output[n_training];
-  float   test_input[n_test];
-  float   test_output[n_test];
+  float   training_input[length_training];
+  float   training_output[length_training];
+  float   test_input[length_test];
+  float   test_output[length_test];
 
   training_input_file = fopen("data/training/training_input.txt", "r");
   training_output_file = fopen("data/training/training_output.txt", "r");
@@ -33,7 +33,7 @@ int main(int argc,char **args)
     return 1;
   }
   // load training data
-  for (i = 0; i < n_training; i++)
+  for (i = 0; i < length_training; i++)
   {
     fscanf(training_input_file,type,&value);
     training_input[i] = value;
@@ -41,7 +41,7 @@ int main(int argc,char **args)
     training_output[i] = value;
   }
   // load test data
-  for (i = 0; i < n_test; i++)
+  for (i = 0; i < length_test; i++)
   {
     fscanf(test_input_file,type,&value);
     test_input[i] = value;
@@ -61,13 +61,14 @@ int main(int argc,char **args)
   Mat            K;                  // covariance matrix
   PetscErrorCode ierr;
   PetscMPIInt    size;
+  PetscInt       n_training = length_training, n_test = length_test;
   PetscInt       n_regressors;
   PetscScalar    u_i,u_j;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,PETSC_NULL);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n_training,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&length_training,NULL);CHKERRQ(ierr);
   /*
      Create vectors.  Note that we form 2 vector from scratch and
      then duplicate as needed.
@@ -88,7 +89,7 @@ int main(int argc,char **args)
   */
   // Create regressor matrix
   ierr = MatCreate(PETSC_COMM_WORLD,&R);CHKERRQ(ierr);
-  ierr = MatSetSizes(R,PETSC_DECIDE,PETSC_DECIDE,n_training,n_training);CHKERRQ(ierr);
+  ierr = MatSetSizes(R,PETSC_DECIDE,PETSC_DECIDE, n_regressors,n_training);CHKERRQ(ierr);
   ierr = MatSetFromOptions(R);CHKERRQ(ierr);
   ierr = MatSetUp(R);CHKERRQ(ierr);
   // Create covariance matrix
@@ -101,9 +102,9 @@ int main(int argc,char **args)
      Assemble matrix covariance with covariance matrix
   */
   /*
-  for (i = 1; i < n_training; i++)
+  for (i = 1; i < length_training; i++)
   {
-    for (j = 1; j < n_training; j++)
+    for (j = 1; j < length_training; j++)
     {
 
     }
