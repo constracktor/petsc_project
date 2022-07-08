@@ -1,6 +1,6 @@
 #include <stdio.h>
-typedef float real;
-#define type "%f"
+typedef double real;
+#define type "%lf"
 
 int main() {
     FILE    *training_input_file;
@@ -52,11 +52,11 @@ int main() {
 
     for(int i = 0; i < length_training; i++)
     {
-      printf("index %d: input = %f output = %f\n", i, training_input[i], training_output[i]);
+      printf("index %d: input = %lf output = %lf\n", i, training_input[i], training_output[i]);
     }
     for(int i = 0; i < length_test; i++)
     {
-      printf("index %d: input = %f output = %f\n", i, test_input[i], test_output[i]);
+      printf("index %d: input = %lf output = %lf\n", i, test_input[i], test_output[i]);
     }
 
     printf("return 0\n");
