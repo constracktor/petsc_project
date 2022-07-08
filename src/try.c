@@ -98,9 +98,9 @@ int main(int argc,char **args)
   ierr = MatSetUp(K);CHKERRQ(ierr);
   // for latter: MatCreateSBAIJ
   /*
-  /*
      Assemble matrix covariance with covariance matrix
   */
+  /*
   for (i = 1; i < n_training; i++)
   {
     for (j = 1; j < n_training; j++)
