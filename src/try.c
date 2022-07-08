@@ -33,7 +33,7 @@ int main(int argc,char **args)
     return 1;
   }
   // load training data
-  for (i = 0; i < length_training; i++)
+  for (int i = 0; i < length_training; i++)
   {
     fscanf(training_input_file,type,&value);
     training_input[i] = value;
@@ -41,7 +41,7 @@ int main(int argc,char **args)
     training_output[i] = value;
   }
   // load test data
-  for (i = 0; i < length_test; i++)
+  for (int i = 0; i < length_test; i++)
   {
     fscanf(test_input_file,type,&value);
     test_input[i] = value;
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n_training = length_training, n_test = length_test;
-  PetscInt       n_regressors;
+  PetscInt       i,n_regressors;
   PetscScalar    u_i,u_j;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,PETSC_NULL);if (ierr) return ierr;
