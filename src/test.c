@@ -1,6 +1,6 @@
 #include <stdio.h>
 typedef float real;
-#define type "%f";
+#define type "%f"
 
 int main() {
     FILE    *training_input_file;
