@@ -29,17 +29,17 @@ int main() {
     // load training data
     for(int i = 0; i < length_training; i++)
     {
-      fscanf(training_input_file,"%f",&value);
+      fscanf(training_input_file,"%lf",&value);
       training_input[i] = value;
-      fscanf(training_output_file,"%f",&value);
+      fscanf(training_output_file,"%lf",&value);
       training_output[i] = value;
     }
     // load test data
     for(int i = 0; i < length_test; i++)
     {
-      fscanf(test_input_file,"%f",&value);
+      fscanf(test_input_file,"%lf",&value);
       test_input[i] = value;
-      fscanf(test_output_file,"%f",&value);
+      fscanf(test_output_file,"%lf",&value);
       test_output[i] = value;
     }
 
@@ -50,11 +50,11 @@ int main() {
 
     for(int i = 0; i < length_training; i++)
     {
-      printf("index %d: input = %f output = %f\n", i, training_input[i], training_output[i]);
+      printf("index %d: input = %lf output = %lf\n", i, training_input[i], training_output[i]);
     }
     for(int i = 0; i < length_test; i++)
     {
-      printf("index %d: input = %f output = %f\n", i, test_input[i], test_output[i]);
+      printf("index %d: input = %lf output = %lf\n", i, test_input[i], test_output[i]);
     }
 
     printf("return 0\n");
