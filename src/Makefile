@@ -10,3 +10,7 @@ hello_p: hello_p.o chkopts
 sle_solver: sle_solver.o chkopts
 	-${CLINKER} -o sle_solver sle_solver.o ${PETSC_LIB}
 	${RM} sle_solver.o
+
+try: try.o chkopts
+	-${CLINKER} -o try try.o ${PETSC_LIB}
+	${RM} try.o
