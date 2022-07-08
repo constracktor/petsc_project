@@ -26,6 +26,10 @@ int main() {
       printf("return 1\n");
       return 1;
     }
+    if(real == float)
+    {
+      return 1;
+    }
     // load training data
     for(int i = 0; i < length_training; i++)
     {
