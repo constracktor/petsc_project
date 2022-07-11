@@ -7,7 +7,7 @@
 
 void compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar *training_input, PetscScalar *u_row )
 {
-   for(PetscInt i = 0; i < n_regressors, i**)
+   for(PetscInt i = 0; i < n_regressors; i++)
    {
      PetscInt index = row - n_regressors + 1 + i;
      if (index < 0)
