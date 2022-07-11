@@ -153,6 +153,7 @@ int main(int argc,char **args)
     for (j = 1; j < n_training; j++)
     {
       // compute regressor vectors
+      PetscScalar u_i[n_regressors];
       u_i = compute_regressor_vector(i, n_regressors, training_input);
       //u_j = 1;
 
