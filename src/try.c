@@ -170,15 +170,14 @@ int main(int argc,char **args)
       PetscScalar u_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, u_j);
 
-      printf("%lf\n",u_i[0]);
-      printf("%lf\n",u_i[1]);
-      for (i = 0; i < n_regressors; i++)
+      if( i < n_regressors + 1)
       {
-        printf("%lf \n", u_i[i]);
+        for (i = 0; i < n_regressors; i++)
+        {
+          printf("%lf \n", u_i[i]);
+        }
+        printf("\n\n\n");
       }
-      printf("\n\n\n");
-      //u_j = 1;
-
     }
   }
   ierr = MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
