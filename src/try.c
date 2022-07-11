@@ -21,9 +21,16 @@ void compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar 
    }
 }
 
-PetscScalar compute_covariance_fuction(PetscScalar *u_i, PetscScalar *u_j, PetscScalar *hyperparameters)
+PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *u_i, PetscScalar *u_j, PetscScalar *hyperparameters)
 {
-  return hyperparameters[1] * PetscExpReal((PetscScalar)1.0);
+  // Compute the Squared Exponential Covariance Function
+  // vertical_lengthscale * exp(-0.5*lengthscale*(u_i-u_j)^2)
+  PetscScalar distance = 0.0;
+  for(PetscInt i = 0; i < n_regressors; i++)
+  {
+    distance += PetscPowReal(u_i[i] - u_j[j],2);
+  }
+  return hyperparameters[1] * PetscExpReal(-0.5 * hyperparameters[0] * value);
 }
 
 int main(int argc,char **args)
@@ -156,11 +163,16 @@ int main(int argc,char **args)
       PetscScalar u_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, u_j);
       // compute covariance function
-      PetscScalar covariance_function = compute_covariance_fuction(u_i, u_j, hyperparameters);
+      PetscScalar covariance_function = compute_covariance_fuction(n_regressors, u_i, u_j, hyperparameters);
+      // add noise_variance on diagonal
+      if (i==j)
+      {
+        covariance_function += hyperparameters[2];
+      }
       // write covariance function value to covariance matrix
       ierr = MatSetValues(K,1,&i,1,&j,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
 
-      if( i < n_regressors + 1 && j == 0 )
+      if ( i < n_regressors + 1 && j == 0 )
       {
         for (int k = 0; k < n_regressors; k++)
         {
