@@ -5,17 +5,17 @@
 #undef __FUNCT__
 #define __FUNCT__ "main"
 
-PetscScalar compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar *training_input )
+void compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar *training_input, PetscScalar *u_row )
 {
-   PetscScalar u[1];
-   u[0] = (PetscScalar)0.0;
+   u_row[0] = (PetscScalar)0.0;
+   u_row[1] = (PetscScalar)1.0;
 }
 
 int main(int argc,char **args)
 { // parameters
   PetscInt       n_training = 100 * 1000;
   PetscInt       n_test = 5 * 1000;
-  PetscInt       n_regressors = 5;
+  PetscInt       n_regressors = 2;
   PetscInt       i,j,n_zeros;
   PetscScalar    zero = 0.0;
   PetscScalar    value;
@@ -154,7 +154,9 @@ int main(int argc,char **args)
     {
       // compute regressor vectors
       PetscScalar u_i[n_regressors];
-      u_i = compute_regressor_vector(i, n_regressors, training_input);
+      u_i = compute_regressor_vector(i, n_regressors, training_input, u_i);
+      printf("%lf\n",u_i[0]);
+      printf("%lf\n",u_i[1]);
       //u_j = 1;
 
     }
