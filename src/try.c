@@ -13,8 +13,8 @@ int main(int argc,char **args)
   FILE    *test_output_file;
 
   PetscScalar    value;
-  const PetscInt n_training = 100 * 1000;
-  const PetscInt n_test = 5 * 1000;
+  PetscInt n_training = 100 * 1000;
+  PetscInt n_test = 5 * 1000;
 
   PetscScalar   training_input[n_training];
   PetscScalar   training_output[n_training];
@@ -71,7 +71,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,PETSC_NULL);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n_training,NULL);CHKERRQ(ierr);
+
 
   //   Create vectors.  Note that we form 2 vector from scratch and
   //   then duplicate as needed.
