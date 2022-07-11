@@ -16,6 +16,7 @@ int main(int argc,char **args)
   PetscInt       n_training = 100 * 1000;
   PetscInt       n_test = 5 * 1000;
   PetscInt       i,j;
+  PetscScalar    zero = 0.0;
 
   PetscScalar   training_input[n_training];
   PetscScalar   training_output[n_training];
@@ -92,7 +93,7 @@ int main(int argc,char **args)
 
   // Create regressor matrix
   ierr = MatCreate(PETSC_COMM_WORLD,&R);CHKERRQ(ierr);
-  ierr = MatSetSizes(R,PETSC_DECIDE,PETSC_DECIDE, n_regressors,n_training);CHKERRQ(ierr);
+  ierr = MatSetSizes(R,PETSC_DECIDE,PETSC_DECIDE, n_training, n_regressors);CHKERRQ(ierr);
   ierr = MatSetFromOptions(R);CHKERRQ(ierr);
   ierr = MatSetUp(R);CHKERRQ(ierr);
   // Create covariance matrix
@@ -114,7 +115,7 @@ int main(int argc,char **args)
     VecSetValues(u_train,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
     VecSetValues(y_train,1,&i,y_i,INSERT_VALUES);CHKERRQ(ierr);
   }
-
+*/
   // Assemble matrices
 
   // Assemble regressor matrix
@@ -126,14 +127,13 @@ int main(int argc,char **args)
     {
       //R[i,j] = 0
       //MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar v[],InsertMode addv)
-      ierr = MatSetValues(R,1,&i,1,&j,0.0,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(R,1,&i,1,&j,zero,INSERT_VALUES);CHKERRQ(ierr);
     }
     // fill remaining entries with training_input
     for (i = n_zeros; i < n_training; i++)
     {
       //R[i,j] = u_train[i - n_zeros]
-      u_i = training_input[i - n_zeros];
-      ierr = MatSetValues(R,1,&i,1,&j,u_i,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(R,1,&i,1,&j,training_input[i - n_zeros],INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ int main(int argc,char **args)
 
     }
   }
-  */
+
   /*
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
 
