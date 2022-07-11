@@ -5,29 +5,43 @@
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
-{
-  // Load data
-  FILE    *training_input_file;
-  FILE    *training_output_file;
-  FILE    *test_input_file;
-  FILE    *test_output_file;
-
-  PetscScalar    value;
+{ // parameters
   PetscInt       n_training = 100 * 1000;
   PetscInt       n_test = 5 * 1000;
-  PetscInt       i,j;
+  PetscInt       n_regressors = 5;
+  PetscInt       i,j,n_zeros;
   PetscScalar    zero = 0.0;
-
+  PetscScalar    value;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  // Petsc structures
+  Vec            u_train,y_train;    // training_input, training_output
+  Vec            u_test,y_test;      // test_input, test_input
+  Mat            R;                  // regressor matrix
+  Mat            K;                  // covariance matrix
+  // data holders
   PetscScalar   training_input[n_training];
   PetscScalar   training_output[n_training];
   PetscScalar   test_input[n_test];
   PetscScalar   test_output[n_test];
-
+  // data files
+  FILE    *training_input_file;
+  FILE    *training_output_file;
+  FILE    *test_input_file;
+  FILE    *test_output_file;
+  // Petsc initialization
+  ierr = PetscInitialize(&argc,&args,(char*)0,PETSC_NULL);if (ierr) return ierr;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1)
+  {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+  }
+  //////////////////////////////////////////////////////////////////////////////
+  // loadtraining and test data from .txt files
   training_input_file = fopen("data/training/training_input.txt", "r");
   training_output_file = fopen("data/training/training_output.txt", "r");
   test_input_file = fopen("data/test/test_input_3.txt", "r");
   test_output_file = fopen("data/test/test_output_3.txt", "r");
-
   if (training_input_file == NULL || training_output_file == NULL || test_input_file == NULL || test_output_file == NULL)
   {
     printf("return 1\n");
@@ -40,10 +54,6 @@ int main(int argc,char **args)
     training_input[i] = value;
     fscanf(training_output_file,type,&value);
     training_output[i] = value;
-  }
-  for (i = 0; i < n_training; i++)
-  {
-    printf("%lf", training_input[i]);
   }
   // load test data
   for (i = 0; i < n_test; i++)
@@ -58,22 +68,8 @@ int main(int argc,char **args)
   fclose(training_output_file);
   fclose(test_input_file);
   fclose(test_output_file);
-
+  //////////////////////////////////////////////////////////////////////////////
   // Petsc
-  Vec            u_train,y_train;    // training_input, training_output
-  Vec            u_test,y_test;      // test_input, test_input
-  Mat            R;                  // regressor matrix
-  Mat            K;                  // covariance matrix
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscInt       n_zeros;
-  PetscInt       n_regressors = 5;
-  PetscScalar    u_i,y_i;
-
-  ierr = PetscInitialize(&argc,&args,(char*)0,PETSC_NULL);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
-
 
   //   Create vectors.  Note that we form 2 vector from scratch and
   //   then duplicate as needed.
@@ -141,6 +137,7 @@ int main(int argc,char **args)
   // Assemble covariance matrix
   for (i = 1; i < n_training; i++)
   {
+
     for (j = 1; j < n_training; j++)
     {
 
