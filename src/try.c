@@ -14,8 +14,8 @@ int main(int argc,char **args)
   FILE    *test_output_file;
 
   PetscScalar    value;
-  const int length_training = 100 * 1000;
-  const int length_test = 5 * 1000;
+  const PetscInt length_training = 100 * 1000;
+  const PetscInt length_test = 5 * 1000;
 
   PetscScalar   training_input[length_training];
   PetscScalar   training_output[length_training];
