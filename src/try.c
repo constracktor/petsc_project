@@ -20,7 +20,7 @@ int main(int argc,char **args)
   Mat            R;                  // regressor matrix
   Mat            K;                  // covariance matrix
   // GP hyperparameters
-  PetscScalar lengthscale, vertical_lengthscale, noise_variance
+  PetscScalar lengthscale, vertical_lengthscale, noise_variance;
   // data holders
   PetscScalar   training_input[n_training];
   PetscScalar   training_output[n_training];
@@ -56,6 +56,10 @@ int main(int argc,char **args)
     training_input[i] = value;
     fscanf(training_output_file,type,&value);
     training_output[i] = value;
+  }
+  for (i = 0; i < n_training; i++)
+  {
+    printf('%lf \n', training_input[i])
   }
   // load test data
   for (i = 0; i < n_test; i++)
