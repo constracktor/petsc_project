@@ -102,9 +102,9 @@ int main(int argc,char **args)
   fclose(test_output_file);
   //////////////////////////////////////////////////////////////////////////////
   // initalize hyperparameters to moments of the data
-  hyperparameters[0] = 2.0
-  hyperparameters[1] = 2.0
-  hyperparameters[2] = 2.0
+  hyperparameters[0] = 2.0;
+  hyperparameters[1] = 2.0;
+  hyperparameters[2] = 2.0;
   //////////////////////////////////////////////////////////////////////////////
   // Create Petsc structures
   //   Create vectors.  Note that we form 2 vector from scratch and
