@@ -23,9 +23,9 @@ void compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar 
 
 int main(int argc,char **args)
 { // parameters
-  PetscInt       n_training = 100 * 1000;
+  PetscInt       n_training = 1 * 1000;
   PetscInt       n_test = 5 * 1000;
-  PetscInt       n_regressors = 2;
+  PetscInt       n_regressors = 5;
   PetscInt       i,j,n_zeros;
   PetscScalar    zero = 0.0;
   PetscScalar    value;
@@ -74,10 +74,12 @@ int main(int argc,char **args)
     fscanf(training_output_file,type,&value);
     training_output[i] = value;
   }
+  /*
   for (i = 0; i < n_training; i++)
   {
     printf("%lf \n", training_input[i]);
   }
+  */
   // load test data
   for (i = 0; i < n_test; i++)
   {
@@ -170,6 +172,11 @@ int main(int argc,char **args)
 
       printf("%lf\n",u_i[0]);
       printf("%lf\n",u_i[1]);
+      for (i = 0; i < n_regressors; i++)
+      {
+        printf("%lf \n", u_i[i]);
+      }
+      printf("\n\n\n");
       //u_j = 1;
 
     }
