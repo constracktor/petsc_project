@@ -60,7 +60,7 @@ int main(int argc,char **args)
 { // parameters
   PetscInt       n_training = 1 * 1000;//max 100*1000
   PetscInt       n_test = 5 * 1000;
-  PetscInt       n_regressors = 40;
+  PetscInt       n_regressors = 100;
   PetscInt       i,j;
   PetscScalar    value;
   PetscErrorCode ierr;
