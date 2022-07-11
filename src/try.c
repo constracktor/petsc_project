@@ -160,9 +160,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   // Assemble covariance matrix
-  for (i = 1; i < n_training; i++)
+  for (i = 0; i < n_training; i++)
   {
-    for (j = 1; j < n_training; j++)
+    for (j = 0; j < n_training; j++)
     {
       // compute regressor vectors
       PetscScalar u_i[n_regressors];
@@ -170,7 +170,7 @@ int main(int argc,char **args)
       PetscScalar u_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, u_j);
 
-      if( i < n_regressors + 1)
+      if( i < n_regressors + 1 && j == 0)
       {
         for (i = 0; i < n_regressors; i++)
         {
