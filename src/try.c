@@ -64,7 +64,7 @@ int main(int argc,char **args)
   PetscInt       n_training = length_training, n_test = length_test;
   PetscInt       i,j,n_zeros;
   PetscInt       n_regressors = 5;
-  PetscScalar    u_i,u_j;
+  PetscScalar    u_i,y_i;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,PETSC_NULL);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -99,6 +99,19 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(K);CHKERRQ(ierr);
   ierr = MatSetUp(K);CHKERRQ(ierr);
   // for latter: MatCreateSBAIJ
+
+  /*
+     Assemble vectors
+  */
+  // Assemble training data
+  for (i = n_zeros; i < n_training; i++)
+  {
+    u_i = training_input[i]
+    y_i = training_output[i]
+
+    VecSetValues(u_train,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
+    VecSetValues(y_train,1,&i,y_i,INSERT_VALUES);CHKERRQ(ierr);
+  }
   /*
      Assemble matrices
   */
@@ -110,11 +123,14 @@ int main(int argc,char **args)
     for (i = 0; i < n_zeros; i++)
     {
       //R[i,j] = 0
+      //MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar v[],InsertMode addv)
+      MatSetValues(R,1,&i,1,&j,0.0,INSERT_VALUES);CHKERRQ(ierr);
     }
     // fill remaining entries with training_input
     for (i = n_zeros; i < n_training; i++)
     {
       //R[i,j] = u_train[i - n_zeros]
+      MatSetValues(R,1,&i,1,&j,u_train[],INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   // Assemble covariance matrix
