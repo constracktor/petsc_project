@@ -4,6 +4,13 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
+
+PetscScalar compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar *training_input )
+{
+   PetscScalar u[1];
+   u[0] = (PetscScalar)0.0;
+}
+
 int main(int argc,char **args)
 { // parameters
   PetscInt       n_training = 100 * 1000;
@@ -145,6 +152,9 @@ int main(int argc,char **args)
   {
     for (j = 1; j < n_training; j++)
     {
+      // compute regressor vectors
+      u_i = 1;
+      u_j = 1;
 
     }
   }
