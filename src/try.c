@@ -153,8 +153,8 @@ int main(int argc,char **args)
     for (j = 1; j < n_training; j++)
     {
       // compute regressor vectors
-      u_i = 1;
-      u_j = 1;
+      //u_i = 1;
+      //u_j = 1;
 
     }
   }
