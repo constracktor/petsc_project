@@ -7,8 +7,18 @@
 
 void compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar *training_input, PetscScalar *u_row )
 {
-   u_row[0] = (PetscScalar)0.0;
-   u_row[1] = (PetscScalar)1.0;
+   for(PetscInt i = 0; i < n_regressors, i**)
+   {
+     PetscInt index = row - n_regressors + 1 + i;
+     if (index < 0)
+     {
+        u_row[i] = (PetscScalar)0.0;
+     }
+     else
+     {
+       u_row[i] = training_input[index];
+     }
+   }
 }
 
 int main(int argc,char **args)
@@ -155,6 +165,9 @@ int main(int argc,char **args)
       // compute regressor vectors
       PetscScalar u_i[n_regressors];
       compute_regressor_vector(i, n_regressors, training_input, u_i);
+      PetscScalar u_j[n_regressors];
+      compute_regressor_vector(j, n_regressors, training_input, u_j);
+
       printf("%lf\n",u_i[0]);
       printf("%lf\n",u_i[1]);
       //u_j = 1;
