@@ -197,7 +197,7 @@ int main(int argc,char **args)
       // write covariance function value to covariance matrix
       ierr = MatSetValues(K,1,&i,1,&j,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
 
-      if ( i < n_regressors + 1 && j == 0 )
+      if ( i < n_regressors + 1 && j == i )
       {
         for (int k = 0; k < n_regressors; k++)
         {
