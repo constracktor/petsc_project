@@ -5,9 +5,32 @@
 #undef __FUNCT__
 #define __FUNCT__ "main"
 
-void compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar *training_input, PetscScalar *u_row )
+void standardize(PetscInt array_size, PetscScalar *array)//needs later to return mean and std
 {
-   for(PetscInt i = 0; i < n_regressors; i++)
+  // compute mean
+  PetscScalar mean = 0.0;
+  for (PetscInt i = 0; i < array_size; i++)
+  {
+    mean += array[i];
+  }
+  mean = mean / array_size;
+  // compute standard deviation
+  PetscScalar standard_deviation = 0.0;
+  for(PetscInt i = 0; i < array_size; i++)
+  {
+    standard_deviation += PetscPowReal(array[i] - mean,2);
+  }
+  standard_deviation = PetscSqrtReal(standard_deviation / array_size)
+  // standardize input array
+  for(PetscInt i = 0; i < array_size; i++)
+  {
+    array[i] = (array[i] - mean) / standard_deviation;
+  }
+}
+
+void compute_regressor_vector(PetscInt row, PetscInt n_regressors, PetscScalar *training_input, PetscScalar *u_row )
+{
+   for (PetscInt i = 0; i < n_regressors; i++)
    {
      PetscInt index = row - n_regressors + 1 + i;
      if (index < 0)
@@ -26,7 +49,7 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *u_i, 
   // Compute the Squared Exponential Covariance Function
   // vertical_lengthscale * exp(-0.5*lengthscale*(u_i-u_j)^2)
   PetscScalar distance = 0.0;
-  for(PetscInt i = 0; i < n_regressors; i++)
+  for (PetscInt i = 0; i < n_regressors; i++)
   {
     distance += PetscPowReal(u_i[i] - u_j[i],2);
   }
@@ -38,8 +61,7 @@ int main(int argc,char **args)
   PetscInt       n_training = 1 * 1000;//max 100*1000
   PetscInt       n_test = 5 * 1000;
   PetscInt       n_regressors = 10;
-  PetscInt       i,j,n_zeros;
-  PetscScalar    zero = 0.0;
+  PetscInt       i,j;
   PetscScalar    value;
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -108,10 +130,13 @@ int main(int argc,char **args)
   fclose(test_input_file);
   fclose(test_output_file);
   //////////////////////////////////////////////////////////////////////////////
-  // initalize hyperparameters to moments of the data
-  hyperparameters[0] = 2.0;
-  hyperparameters[1] = 2.0;
-  hyperparameters[2] = 2.0;
+  // standardize data for stability
+  standardize(training_input);
+  standardize(training_output);
+  // initalize hyperparameters to empirical moments of the data
+  hyperparameters[0] = 1.0;// variance of training_output
+  hyperparameters[1] = 1.0;// standard deviation of training_input
+  hyperparameters[2] = 0.001; // experience?
   //////////////////////////////////////////////////////////////////////////////
   // Create Petsc structures
   //   Create vectors.  Note that we form 2 vector from scratch and
