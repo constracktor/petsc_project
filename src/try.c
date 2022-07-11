@@ -19,6 +19,8 @@ int main(int argc,char **args)
   Vec            u_test,y_test;      // test_input, test_input
   Mat            R;                  // regressor matrix
   Mat            K;                  // covariance matrix
+  // GP hyperparameters
+  PetscScalar lengthscale, vertical_lengthscale, noise_variance
   // data holders
   PetscScalar   training_input[n_training];
   PetscScalar   training_output[n_training];
@@ -69,8 +71,7 @@ int main(int argc,char **args)
   fclose(test_input_file);
   fclose(test_output_file);
   //////////////////////////////////////////////////////////////////////////////
-  // Petsc
-
+  // Create Petsc structures
   //   Create vectors.  Note that we form 2 vector from scratch and
   //   then duplicate as needed.
   // Create train vectors
@@ -86,7 +87,6 @@ int main(int argc,char **args)
 
   // Create matrix.  When using MatCreate(), the matrix format can
   // be specified at runtime.
-
   // Create regressor matrix
   ierr = MatCreate(PETSC_COMM_WORLD,&R);CHKERRQ(ierr);
   ierr = MatSetSizes(R,PETSC_DECIDE,PETSC_DECIDE, n_training, n_regressors);CHKERRQ(ierr);
@@ -98,6 +98,8 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(K);CHKERRQ(ierr);
   ierr = MatSetUp(K);CHKERRQ(ierr);
   // for latter: MatCreateSBAIJ
+  //////////////////////////////////////////////////////////////////////////////
+  // Assemble Petsc structures
   /*
 
   // Assemble vectors
@@ -128,7 +130,7 @@ int main(int argc,char **args)
     // fill remaining entries with training_input
     for (i = n_zeros; i < n_training; i++)
     {
-      //R[i,j] = u_train[i - n_zeros]
+      //R[i,j] = training_input[i - n_zeros]
       ierr = MatSetValues(R,1,&i,1,&j,&training_input[i - n_zeros],INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -137,41 +139,17 @@ int main(int argc,char **args)
   // Assemble covariance matrix
   for (i = 1; i < n_training; i++)
   {
-
     for (j = 1; j < n_training; j++)
     {
 
     }
   }
+  ierr = MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /*
-  value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
-
-  for (i=1; i<n-1; i++) {
-    col[0] = i-1;
-    col[1] = i;
-    col[2] = i+1;
-    ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  }
-
-  i    = n - 1;
-  col[0] = n - 2;
-  col[1] = n - 1;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  i    = 0;
-  col[0] = 0;
-  col[1] = 1;
-  value[0] = 2.0;
-  value[1] = -1.0;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  */
 
 
   ierr = PetscFinalize(); CHKERRQ(ierr);
-
   printf("return 0\n");
-  return 0;
+  return ierr;
 }
