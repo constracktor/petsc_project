@@ -170,7 +170,7 @@ int main(int argc,char **args)
       PetscScalar u_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, u_j);
 
-      if( i < 5 && j == 0 )
+      if( i < n_regressors + 1 && j == 0 )
       {
         for (int k = 0; k < n_regressors; k++)
         {
