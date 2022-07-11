@@ -13,8 +13,9 @@ int main(int argc,char **args)
   FILE    *test_output_file;
 
   PetscScalar    value;
-  PetscInt n_training = 100 * 1000;
-  PetscInt n_test = 5 * 1000;
+  PetscInt       n_training = 100 * 1000;
+  PetscInt       n_test = 5 * 1000;
+  PetscInt       i,j;
 
   PetscScalar   training_input[n_training];
   PetscScalar   training_output[n_training];
@@ -32,19 +33,19 @@ int main(int argc,char **args)
     return 1;
   }
   // load training data
-  for (int i = 0; i < n_training; i++)
+  for (i = 0; i < n_training; i++)
   {
     fscanf(training_input_file,type,&value);
     training_input[i] = value;
     fscanf(training_output_file,type,&value);
     training_output[i] = value;
   }
-  for (int i = 0; i < n_training; i++)
+  for (i = 0; i < n_training; i++)
   {
     printf("%lf", training_input[i]);
   }
   // load test data
-  for (int i = 0; i < n_test; i++)
+  for (i = 0; i < n_test; i++)
   {
     fscanf(test_input_file,type,&value);
     test_input[i] = value;
@@ -64,7 +65,7 @@ int main(int argc,char **args)
   Mat            K;                  // covariance matrix
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       i,j,n_zeros;
+  PetscInt       n_zeros;
   PetscInt       n_regressors = 5;
   PetscScalar    u_i,y_i;
 
