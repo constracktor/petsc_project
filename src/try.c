@@ -59,7 +59,7 @@ int main(int argc,char **args)
   }
   for (i = 0; i < n_training; i++)
   {
-    printf('%lf \n', training_input[i]);
+    printf("%lf \n", training_input[i]);
   }
   // load test data
   for (i = 0; i < n_test; i++)
