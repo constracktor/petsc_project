@@ -25,7 +25,7 @@ int main(int argc,char **args)
 { // parameters
   PetscInt       n_training = 1 * 1000;
   PetscInt       n_test = 5 * 1000;
-  PetscInt       n_regressors = 5;
+  PetscInt       n_regressors = 10;
   PetscInt       i,j,n_zeros;
   PetscScalar    zero = 0.0;
   PetscScalar    value;
