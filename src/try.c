@@ -13,7 +13,7 @@ int main(int argc,char **args)
   FILE    *test_input_file;
   FILE    *test_output_file;
 
-  real    value;
+  PetscScalar    value;
   const int length_training = 100 * 1000;
   const int length_test = 5 * 1000;
 
@@ -70,10 +70,9 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n_training,NULL);CHKERRQ(ierr);
-  /*
-     Create vectors.  Note that we form 2 vector from scratch and
-     then duplicate as needed.
-  */
+
+  //   Create vectors.  Note that we form 2 vector from scratch and
+  //   then duplicate as needed.
   // Create train vectors
   ierr = VecCreate(PETSC_COMM_WORLD,&u_train);CHKERRQ(ierr);
   ierr = VecSetSizes(u_train,PETSC_DECIDE,n_training);CHKERRQ(ierr);
@@ -84,10 +83,10 @@ int main(int argc,char **args)
   ierr = VecSetSizes(u_test,PETSC_DECIDE,n_test);CHKERRQ(ierr);
   ierr = VecSetFromOptions(u_test);CHKERRQ(ierr);
   ierr = VecDuplicate(u_test,&y_test);CHKERRQ(ierr);
-  /*
-     Create matrix.  When using MatCreate(), the matrix format can
-     be specified at runtime.
-  */
+
+  // Create matrix.  When using MatCreate(), the matrix format can
+  // be specified at runtime.
+
   // Create regressor matrix
   ierr = MatCreate(PETSC_COMM_WORLD,&R);CHKERRQ(ierr);
   ierr = MatSetSizes(R,PETSC_DECIDE,PETSC_DECIDE, n_regressors,n_training);CHKERRQ(ierr);
@@ -99,10 +98,10 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(K);CHKERRQ(ierr);
   ierr = MatSetUp(K);CHKERRQ(ierr);
   // for latter: MatCreateSBAIJ
-
   /*
-     Assemble vectors
-  */
+
+  // Assemble vectors
+
   // Assemble training data
   for (i = n_zeros; i < n_training; i++)
   {
@@ -112,9 +111,9 @@ int main(int argc,char **args)
     VecSetValues(u_train,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
     VecSetValues(y_train,1,&i,y_i,INSERT_VALUES);CHKERRQ(ierr);
   }
-  /*
-     Assemble matrices
-  */
+
+  // Assemble matrices
+
   // Assemble regressor matrix
   for (j = 0; j < n_regressors; j++)
   {
@@ -144,6 +143,7 @@ int main(int argc,char **args)
 
     }
   }
+  */
   /*
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
 
