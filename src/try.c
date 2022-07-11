@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <petscksp.h>
-typedef double real;
 #define type "%lf"
 
 #undef __FUNCT__
@@ -14,13 +13,13 @@ int main(int argc,char **args)
   FILE    *test_output_file;
 
   PetscScalar    value;
-  const PetscInt length_training = 100 * 1000;
-  const PetscInt length_test = 5 * 1000;
+  const PetscInt n_training = 100 * 1000;
+  const PetscInt n_test = 5 * 1000;
 
-  PetscScalar   training_input[length_training];
-  PetscScalar   training_output[length_training];
-  PetscScalar   test_input[length_test];
-  PetscScalar   test_output[length_test];
+  PetscScalar   training_input[n_training];
+  PetscScalar   training_output[n_training];
+  PetscScalar   test_input[n_test];
+  PetscScalar   test_output[n_test];
 
   training_input_file = fopen("data/training/training_input.txt", "r");
   training_output_file = fopen("data/training/training_output.txt", "r");
@@ -33,19 +32,19 @@ int main(int argc,char **args)
     return 1;
   }
   // load training data
-  for (int i = 0; i < length_training; i++)
+  for (int i = 0; i < n_training; i++)
   {
     fscanf(training_input_file,type,&value);
     training_input[i] = value;
     fscanf(training_output_file,type,&value);
     training_output[i] = value;
   }
-  for (int i = 0; i < length_training; i++)
+  for (int i = 0; i < n_training; i++)
   {
     printf("%lf", training_input[i]);
   }
   // load test data
-  for (int i = 0; i < length_test; i++)
+  for (int i = 0; i < n_test; i++)
   {
     fscanf(test_input_file,type,&value);
     test_input[i] = value;
@@ -65,7 +64,6 @@ int main(int argc,char **args)
   Mat            K;                  // covariance matrix
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       n_training = length_training, n_test = length_test;
   PetscInt       i,j,n_zeros;
   PetscInt       n_regressors = 5;
   PetscScalar    u_i,y_i;
@@ -140,9 +138,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   // Assemble covariance matrix
-  for (i = 1; i < length_training; i++)
+  for (i = 1; i < n_training; i++)
   {
-    for (j = 1; j < length_training; j++)
+    for (j = 1; j < n_training; j++)
     {
 
     }
