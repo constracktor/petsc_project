@@ -23,7 +23,7 @@ void compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar 
 
 PetscScalar compute_covariance_fuction(PetscScalar *u_i, PetscScalar *u_j, PetscScalar *hyperparameters)
 {
-  return (PetscScalar)1.0;
+  return PetscExpReal((PetscScalar)1.0);
 }
 
 int main(int argc,char **args)
@@ -39,7 +39,6 @@ int main(int argc,char **args)
   // Petsc structures
   Vec            u_train,y_train;    // training_input, training_output
   Vec            u_test,y_test;      // test_input, test_input
-  Mat            R;                  // regressor matrix
   Mat            K;                  // covariance matrix
   // GP hyperparameters
   // hyperparameters[0] = lengthscale
@@ -120,11 +119,6 @@ int main(int argc,char **args)
 
   // Create matrix.  When using MatCreate(), the matrix format can
   // be specified at runtime.
-  // Create regressor matrix
-  ierr = MatCreate(PETSC_COMM_WORLD,&R);CHKERRQ(ierr);
-  ierr = MatSetSizes(R,PETSC_DECIDE,PETSC_DECIDE, n_training, n_regressors);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(R);CHKERRQ(ierr);
-  ierr = MatSetUp(R);CHKERRQ(ierr);
   // Create covariance matrix
   ierr = MatCreate(PETSC_COMM_WORLD,&K);CHKERRQ(ierr);
   ierr = MatSetSizes(K,PETSC_DECIDE,PETSC_DECIDE,n_training,n_training);CHKERRQ(ierr);
@@ -148,27 +142,6 @@ int main(int argc,char **args)
   }
 */
   // Assemble matrices
-
-  // Assemble regressor matrix
-  for (j = 0; j < n_regressors; j++)
-  {
-    n_zeros = n_regressors - 1 - j;
-    // fill first n_zeros entries with zeros
-    for (i = 0; i < n_zeros; i++)
-    {
-      //R[i,j] = 0
-      //MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar v[],InsertMode addv)
-      ierr = MatSetValues(R,1,&i,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    // fill remaining entries with training_input
-    for (i = n_zeros; i < n_training; i++)
-    {
-      //R[i,j] = training_input[i - n_zeros]
-      ierr = MatSetValues(R,1,&i,1,&j,&training_input[i - n_zeros],INSERT_VALUES);CHKERRQ(ierr);
-    }
-  }
-  ierr = MatAssemblyBegin(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   // Assemble covariance matrix
   for (i = 0; i < n_training; i++)
   {
