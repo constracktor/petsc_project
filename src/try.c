@@ -20,7 +20,7 @@ void standardize(PetscInt array_size, PetscScalar *array)//needs later to return
   {
     standard_deviation += PetscPowReal(array[i] - mean,2);
   }
-  standard_deviation = PetscSqrtReal(standard_deviation / array_size)
+  standard_deviation = PetscSqrtReal(standard_deviation / array_size);
   // standardize input array
   for(PetscInt i = 0; i < array_size; i++)
   {
