@@ -42,7 +42,7 @@ int main(int argc,char **args)
   }
   for (int i = 0; i < length_training; i++)
   {
-    printf("%lf", training_input[i])
+    printf("%lf", training_input[i]);
   }
   // load test data
   for (int i = 0; i < length_test; i++)
