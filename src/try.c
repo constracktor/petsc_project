@@ -62,7 +62,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n_training = length_training, n_test = length_test;
-  PetscInt       i,n_regressors;
+  PetscInt       i,j,n_regressors = 5;
   PetscScalar    u_i,u_j;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,PETSC_NULL);if (ierr) return ierr;
@@ -101,6 +101,14 @@ int main(int argc,char **args)
   /*
      Assemble matrix covariance with covariance matrix
   */
+  // Assemble regressor matrix
+  for (i = 0; i < n_training; i++)
+  {
+    for (j = 0; j < n_regressors; j++)
+    {
+      if ()
+    }
+  }
   /*
   for (i = 1; i < length_training; i++)
   {
