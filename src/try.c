@@ -28,9 +28,9 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *u_i, 
   PetscScalar distance = 0.0;
   for(PetscInt i = 0; i < n_regressors; i++)
   {
-    distance += PetscPowReal(u_i[i] - u_j[j],2);
+    distance += PetscPowReal(u_i[i] - u_j[i],2);
   }
-  return hyperparameters[1] * PetscExpReal(-0.5 * hyperparameters[0] * value);
+  return hyperparameters[1] * PetscExpReal(-0.5 * hyperparameters[0] * distance);
 }
 
 int main(int argc,char **args)
