@@ -127,13 +127,13 @@ int main(int argc,char **args)
     {
       //R[i,j] = 0
       //MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],const PetscScalar v[],InsertMode addv)
-      ierr = MatSetValues(R,1,&i,1,&j,zero,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(R,1,&i,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
     }
     // fill remaining entries with training_input
     for (i = n_zeros; i < n_training; i++)
     {
       //R[i,j] = u_train[i - n_zeros]
-      ierr = MatSetValues(R,1,&i,1,&j,training_input[i - n_zeros],INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(R,1,&i,1,&j,&training_input[i - n_zeros],INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(R,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
