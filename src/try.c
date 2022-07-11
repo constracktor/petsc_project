@@ -23,7 +23,7 @@ void compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar 
 
 PetscScalar compute_covariance_fuction(PetscScalar *u_i, PetscScalar *u_j, PetscScalar *hyperparameters)
 {
-  return PetscExpReal((PetscScalar)1.0);
+  return hyperparameters[1] * PetscExpReal((PetscScalar)1.0);
 }
 
 int main(int argc,char **args)
@@ -102,6 +102,9 @@ int main(int argc,char **args)
   fclose(test_output_file);
   //////////////////////////////////////////////////////////////////////////////
   // initalize hyperparameters to moments of the data
+  hyperparameters[0] = 2.0
+  hyperparameters[1] = 2.0
+  hyperparameters[2] = 2.0
   //////////////////////////////////////////////////////////////////////////////
   // Create Petsc structures
   //   Create vectors.  Note that we form 2 vector from scratch and
@@ -163,7 +166,8 @@ int main(int argc,char **args)
         {
           printf("%lf \n", u_i[k]);
         }
-        printf("\n\n\n");
+        printf("\n %lf \n\n", covariance_function);
+
       }
     }
   }
