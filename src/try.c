@@ -199,11 +199,13 @@ int main(int argc,char **args)
 
       if ( i < n_regressors + 1 && j == i - 1 )
       {
+        /*
         for (int k = 0; k < n_regressors; k++)
         {
           printf("%lf \n", u_i[k]);
         }
-        printf("\n %lf \n\n", covariance_function);
+        */
+        printf("\n%lf\n\n", covariance_function);
 
       }
     }
