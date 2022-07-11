@@ -21,9 +21,14 @@ void compute_regressor_vector( PetscInt row, PetscInt n_regressors, PetscScalar 
    }
 }
 
+PetscScalar compute_covariance_fuction(PetscScalar *u_i, PetscScalar *u_j, PetscScalar *hyperparameters)
+{
+  return (PetscScalar)1.0;
+}
+
 int main(int argc,char **args)
 { // parameters
-  PetscInt       n_training = 1 * 1000;
+  PetscInt       n_training = 1 * 1000;//max 100*1000
   PetscInt       n_test = 5 * 1000;
   PetscInt       n_regressors = 10;
   PetscInt       i,j,n_zeros;
@@ -37,7 +42,10 @@ int main(int argc,char **args)
   Mat            R;                  // regressor matrix
   Mat            K;                  // covariance matrix
   // GP hyperparameters
-  PetscScalar lengthscale, vertical_lengthscale, noise_variance;
+  // hyperparameters[0] = lengthscale
+  // hyperparameters[1] = vertical_lengthscale
+  // hyperparameters[2] = noise_variance
+  PetscScalar hyperparameters[3];
   // data holders
   PetscScalar   training_input[n_training];
   PetscScalar   training_output[n_training];
@@ -93,6 +101,8 @@ int main(int argc,char **args)
   fclose(training_output_file);
   fclose(test_input_file);
   fclose(test_output_file);
+  //////////////////////////////////////////////////////////////////////////////
+  // initalize hyperparameters to moments of the data
   //////////////////////////////////////////////////////////////////////////////
   // Create Petsc structures
   //   Create vectors.  Note that we form 2 vector from scratch and
@@ -169,6 +179,10 @@ int main(int argc,char **args)
       compute_regressor_vector(i, n_regressors, training_input, u_i);
       PetscScalar u_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, u_j);
+      // compute covariance function
+      PetscScalar covariance function = compute_covariance_fuction(u_i, u_j, hyperparameters);
+      // write covariance function value to covariance matrix
+      ierr = MatSetValues(K,1,&i,1,&j,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
 
       if( i < n_regressors + 1 && j == 0 )
       {
