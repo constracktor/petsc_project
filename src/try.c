@@ -130,7 +130,7 @@ int main(int argc,char **args)
     for (i = n_zeros; i < n_training; i++)
     {
       //R[i,j] = u_train[i - n_zeros]
-      u_i = training_input[i - n_zeros]
+      u_i = training_input[i - n_zeros];
       ierr = MatSetValues(R,1,&i,1,&j,training_input[i],INSERT_VALUES);CHKERRQ(ierr);
     }
   }
