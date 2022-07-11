@@ -131,8 +131,8 @@ int main(int argc,char **args)
   fclose(test_output_file);
   //////////////////////////////////////////////////////////////////////////////
   // standardize data for stability
-  standardize(training_input);
-  standardize(training_output);
+  standardize(n_training, training_input);
+  standardize(n_training, training_output);
   // initalize hyperparameters to empirical moments of the data
   hyperparameters[0] = 1.0;// variance of training_output
   hyperparameters[1] = 1.0;// standard deviation of training_input
