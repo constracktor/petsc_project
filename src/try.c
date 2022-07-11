@@ -180,7 +180,7 @@ int main(int argc,char **args)
       PetscScalar u_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, u_j);
       // compute covariance function
-      PetscScalar covariance function = compute_covariance_fuction(u_i, u_j, hyperparameters);
+      PetscScalar covariance_function = compute_covariance_fuction(u_i, u_j, hyperparameters);
       // write covariance function value to covariance matrix
       ierr = MatSetValues(K,1,&i,1,&j,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
 
