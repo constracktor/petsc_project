@@ -40,6 +40,10 @@ int main(int argc,char **args)
     fscanf(training_output_file,type,&value);
     training_output[i] = value;
   }
+  for (int i = 0; i < length_training; i++)
+  {
+    printf("%lf", training_input[i])
+  }
   // load test data
   for (int i = 0; i < length_test; i++)
   {
