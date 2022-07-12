@@ -259,16 +259,14 @@ int main(int argc,char **args)
   // Compute alpha
   // solve first triangular matrix system L*beta=y_train
   ierr = MatSolve(K,y_train,beta);CHKERRQ(ierr);
-  // print vector
-  //ierr = VecView(beta,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   // solve second triangular system L^T*alpha=beta
   ierr = MatSolveTranspose(K,beta,alpha);CHKERRQ(ierr);
-  // print vector
-  //ierr = VecView(alpha,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // Make predictions
   ierr = MatMult(cross_covariance,alpha,test_prediction);CHKERRQ(ierr);
   // print vectors
+  //ierr = VecView(beta,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = VecView(alpha,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //ierr = VecView(y_test,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //ierr = VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
