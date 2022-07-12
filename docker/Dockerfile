@@ -13,14 +13,13 @@
 #
 # Update Repository:
 # git add . && git commit -m "comment" && git push
+# git add . && git commit --amend --no-edit && git push -f
 
 FROM ubuntu:22.04
 
 SHELL ["/bin/bash","-c"]
 # install essentials
 RUN apt-get update -y && apt-get install -y vim make git python3 gcc g++ gfortran openmpi-bin
-# remove docker error message
-RUN export OMPI_MCA_btl_vader_single_copy_mechanism=none
 
 # add user
 RUN useradd -ms /bin/bash user
@@ -36,6 +35,9 @@ RUN git clone -b release https://gitlab.com/petsc/petsc.git/ && cd petsc && git 
 RUN cd petsc && ./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --with-clanguage=cxx --download-openmpi --download-fblaslapack && make all check
 # export petsc
 RUN export PETSC_DIR=$HOME/petsc && export PETSC_ARCH=petsc-arch
+
+# remove docker error message
+RUN export OMPI_MCA_btl_vader_single_copy_mechanism=none
 
 # OPTIONAL:
 # mount folder

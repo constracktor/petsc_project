@@ -44,14 +44,14 @@ void compute_regressor_vector(PetscInt row, PetscInt n_regressors, PetscScalar *
    }
 }
 
-PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *u_i, PetscScalar *u_j, PetscScalar *hyperparameters)
+PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, PetscScalar *z_j, PetscScalar *hyperparameters)
 {
   // Compute the Squared Exponential Covariance Function
-  // vertical_lengthscale * exp(-0.5*lengthscale*(u_i-u_j)^2)
+  // C(z_i,z_j) = vertical_lengthscale * exp(-0.5*lengthscale*(z_i-z_j)^2)
   PetscScalar distance = 0.0;
   for (PetscInt i = 0; i < n_regressors; i++)
   {
-    distance += PetscPowReal(u_i[i] - u_j[i],2);
+    distance += PetscPowReal(z_i[i] - z_j[i],2);
   }
   return hyperparameters[1] * PetscExpReal(-0.5 * hyperparameters[0] * distance);
 }
@@ -59,15 +59,15 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *u_i, 
 int main(int argc,char **args)
 { // parameters
   PetscInt       n_training = 1 * 1000;//max 100*1000
-  PetscInt       n_test = 5 * 1000;
+  PetscInt       n_test = 1 * 1000;
   PetscInt       n_regressors = 100;
   PetscInt       i,j;
   PetscScalar    value;
   PetscErrorCode ierr;
   PetscMPIInt    size;
   // Petsc structures
-  Vec            u_train,y_train;    // training_input, training_output
-  Vec            u_test,y_test;      // test_input, test_input
+  Vec            y_train;            // training_output
+  Vec            cross_covariance;   // cross_covariance
   Mat            K;                  // covariance matrix
   // GP hyperparameters
   // hyperparameters[0] = lengthscale
@@ -110,12 +110,6 @@ int main(int argc,char **args)
     fscanf(training_output_file,type,&value);
     training_output[i] = value;
   }
-  /*
-  for (i = 0; i < n_training; i++)
-  {
-    printf("%lf \n", training_input[i]);
-  }
-  */
   // load test data
   for (i = 0; i < n_test; i++)
   {
@@ -139,19 +133,11 @@ int main(int argc,char **args)
   hyperparameters[2] = 0.001; // experience?
   //////////////////////////////////////////////////////////////////////////////
   // Create Petsc structures
-  //   Create vectors.  Note that we form 2 vector from scratch and
-  //   then duplicate as needed.
-  // Create train vectors
-  ierr = VecCreate(PETSC_COMM_WORLD,&u_train);CHKERRQ(ierr);
-  ierr = VecSetSizes(u_train,PETSC_DECIDE,n_training);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u_train);CHKERRQ(ierr);
-  ierr = VecDuplicate(u_train,&y_train);CHKERRQ(ierr);
-  // Create test vectors
-  ierr = VecCreate(PETSC_COMM_WORLD,&u_test);CHKERRQ(ierr);
-  ierr = VecSetSizes(u_test,PETSC_DECIDE,n_test);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u_test);CHKERRQ(ierr);
-  ierr = VecDuplicate(u_test,&y_test);CHKERRQ(ierr);
-
+  // Create vectors
+  ierr = VecCreate(PETSC_COMM_WORLD,&y_train);CHKERRQ(ierr);
+  ierr = VecSetSizes(y_train,PETSC_DECIDE,n_training);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y_train);CHKERRQ(ierr);
+  ierr = VecDuplicate(y_train,&cross_covariance);CHKERRQ(ierr);
   // Create matrix.  When using MatCreate(), the matrix format can
   // be specified at runtime.
   // Create covariance matrix
@@ -162,33 +148,24 @@ int main(int argc,char **args)
   // for latter: MatCreateSBAIJ
   //////////////////////////////////////////////////////////////////////////////
   // Assemble Petsc structures
-  /*
-
-  // Assemble vectors
-
-  // Assemble training data
-  for (i = n_zeros; i < n_training; i++)
+  // Assemble output vector
+  for (i = 0; i < n_training; i++)
   {
-    u_i = training_input[i]
-    y_i = training_output[i]
-
-    VecSetValues(u_train,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
-    VecSetValues(y_train,1,&i,y_i,INSERT_VALUES);CHKERRQ(ierr);
+    // y_train contains the training output
+    VecSetValues(y_train,1,&i,&training_output[i],INSERT_VALUES);CHKERRQ(ierr);
   }
-*/
-  // Assemble matrices
   // Assemble covariance matrix
   for (i = 0; i < n_training; i++)
   {
     for (j = 0; j < n_training; j++)
     {
       // compute regressor vectors
-      PetscScalar u_i[n_regressors];
-      compute_regressor_vector(i, n_regressors, training_input, u_i);
-      PetscScalar u_j[n_regressors];
-      compute_regressor_vector(j, n_regressors, training_input, u_j);
+      PetscScalar z_i[n_regressors];
+      compute_regressor_vector(i, n_regressors, training_input, z_i);
+      PetscScalar z_j[n_regressors];
+      compute_regressor_vector(j, n_regressors, training_input, z_j);
       // compute covariance function
-      PetscScalar covariance_function = compute_covariance_fuction(n_regressors, u_i, u_j, hyperparameters);
+      PetscScalar covariance_function = compute_covariance_fuction(n_regressors, z_i, z_j, hyperparameters);
       // add noise_variance on diagonal
       if (i==j)
       {
@@ -196,26 +173,33 @@ int main(int argc,char **args)
       }
       // write covariance function value to covariance matrix
       ierr = MatSetValues(K,1,&i,1,&j,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
-
-      if (j == i - 2 )
+/*
+      if (j == i - 2)
       {
-        /*
-        for (int k = 0; k < n_regressors; k++)
-        {
-          printf("%lf \n", u_i[k]);
-        }
-        */
         printf("\n%lf\n\n", covariance_function);
-
       }
+      */
     }
   }
   ierr = MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  //////////////////////////////////////////////////////////////////////////////
+  // Compute cholesky decompostion of K
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Make predictions
+/*
+// cross_covariance
+PetscScalar prediction_input[n_regressors];
+compute_regressor_vector(100, n_regressors, test_input, prediction_input)
+if(i=100)
+VecSetValues(cross_covariance,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
+*/
 
 
 
+
+  // finalize Petsc
   ierr = PetscFinalize(); CHKERRQ(ierr);
-  printf("return 0\n");
   return ierr;
 }
