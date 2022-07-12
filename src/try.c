@@ -229,9 +229,9 @@ VecSetValues(cross_covariance,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecDestroy(&cross_covariance);CHKERRQ(ierr);
   ierr = MatDestroy(&K);CHKERRQ(ierr);
   ierr = MatDestroy(&L);CHKERRQ(ierr);
-  ierr = PCDestroy(&pc);CHKERRQ(ierr);
-  
-  printf("Terminated");
+  //ierr = PCDestroy(&pc);CHKERRQ(ierr);
+
+  printf("Terminated\n");
   // finalize Petsc
   ierr = PetscFinalize(); CHKERRQ(ierr);
   return ierr;
