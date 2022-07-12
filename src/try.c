@@ -58,7 +58,7 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 
 int main(int argc,char **args)
 { // parameters
-  PetscInt       n_training = 10;//1 * 1000;//max 100*1000
+  PetscInt       n_training = 100;//1 * 1000;//max 100*1000
   PetscInt       n_test = 1 * 1000;
   PetscInt       n_regressors = 100;
   PetscInt       i,j;
@@ -191,21 +191,27 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  // print matrix
+  ierr = MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));
   //////////////////////////////////////////////////////////////////////////////
   // Compute cholesky decompostion of K
-  KSP            ksp;          /* linear solver context */
+  //KSP            ksp;          /* linear solver context */
   PC             pc;           /* preconditioner context */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,K,K);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  //ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  //ierr = KSPSetOperators(ksp,K,K);CHKERRQ(ierr);
+  //ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  //ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
+  //ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = PCFactorGetMatrix(pc,&L);
-  //PCCreate(MPI_Comm comm,PC *newpc)
-  //PCSetUp()
-  ierr = MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));
+  //ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  //ierr = PCFactorGetMatrix(pc,&L)CHKERRQ(ierr);;
+
+
+  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
+  ierr = PCSetOperators(pc,K,K);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
+  ierr = PCSetUp(pc);CHKERRQ(ierr);
+  ierr = PCFactorGetMatrix(pc,&L);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // Make predictions
 /*
