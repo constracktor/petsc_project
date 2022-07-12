@@ -68,7 +68,7 @@ int main(int argc,char **args)
   // Petsc structures
   Vec            y_train;            // training_output
   Vec            alpha,beta;         // alpha = K^-1 * y_train; L*beta=y_train
-  Vec            test_prediction;
+  Vec            y_test,test_prediction;
   Mat            cross_covariance;
   Mat            K;                  // covariance matrix
   //Mat            L;                  // Cholesky decomposition
@@ -128,8 +128,8 @@ int main(int argc,char **args)
   fclose(test_output_file);
   //////////////////////////////////////////////////////////////////////////////
   // standardize data for stability
-  standardize(n_training, training_input);
-  standardize(n_training, training_output);
+  //standardize(n_training, training_input);
+  //standardize(n_training, training_output);
   // initalize hyperparameters to empirical moments of the data
   hyperparameters[0] = 1.0;// variance of training_output
   hyperparameters[1] = 1.0;// standard deviation of training_input
@@ -144,10 +144,11 @@ int main(int argc,char **args)
   ierr = VecDuplicate(y_train,&alpha);CHKERRQ(ierr);
   ierr = VecDuplicate(y_train,&beta);CHKERRQ(ierr);
   // Create vector test_prediction
-  ierr = VecCreate(PETSC_COMM_WORLD,&test_prediction);CHKERRQ(ierr);
-  ierr = VecSetSizes(test_prediction,PETSC_DECIDE,n_test);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(test_prediction);CHKERRQ(ierr);
-
+  ierr = VecCreate(PETSC_COMM_WORLD,&y_test);CHKERRQ(ierr);
+  ierr = VecSetSizes(y_test,PETSC_DECIDE,n_test);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(y_test);CHKERRQ(ierr);
+  // Duplicate vector test_prediction
+  ierr = VecDuplicate(y_test,&test_prediction);CHKERRQ(ierr);
   // Create matrix.  When using MatCreate(), the matrix format can
   // be specified at runtime.
   // Create covariance matrix
@@ -166,11 +167,17 @@ int main(int argc,char **args)
   ierr = MatSetUp(cross_covariance);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // Assemble Petsc structures
-  // Assemble output vector
+  // Assemble training output vector
   for (i = 0; i < n_training; i++)
   {
     // y_train contains the training output
     ierr = VecSetValues(y_train,1,&i,&training_output[i],INSERT_VALUES);CHKERRQ(ierr);
+  }
+  // Assemble test output vector
+  for (i = 0; i < n_test; i++)
+  {
+    // y_train contains the training output
+    ierr = VecSetValues(y_test,1,&i,&test_output[i],INSERT_VALUES);CHKERRQ(ierr);
   }
   // Assemble covariance matrix
   for (i = 0; i < n_training; i++)
@@ -257,14 +264,21 @@ int main(int argc,char **args)
   //////////////////////////////////////////////////////////////////////////////
   // Make predictions
   ierr = MatMult(cross_covariance,alpha,test_prediction);CHKERRQ(ierr);
-  // print vector
+  // print vectors
+  ierr = VecView(y_test,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+  //////////////////////////////////////////////////////////////////////////////
+  // Compute euklidian norm between vectors
+  ierr = VecAXPY(y_test,-1.0,test_prediction);CHKERRQ(ierr);
+  PetscReal error;
+  ierr = VecNorm(y_test,NORM_2,&error);CHKERRQ(ierr);
+  printf("Error: %lf\n", error);
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
   ierr = VecDestroy(&y_train);CHKERRQ(ierr);
+  ierr = VecDestroy(&y_test);CHKERRQ(ierr);
   ierr = VecDestroy(&alpha);CHKERRQ(ierr);
   ierr = VecDestroy(&beta);CHKERRQ(ierr);
   ierr = VecDestroy(&test_prediction);CHKERRQ(ierr);
