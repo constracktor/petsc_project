@@ -58,7 +58,7 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 
 int main(int argc,char **args)
 { // parameters
-  PetscInt       n_training = 1 * 1000;//max 100*1000
+  PetscInt       n_training = 4 * 1000;//max 100*1000
   PetscInt       n_test = 1 * 1000;
   PetscInt       n_regressors = 100;
   PetscInt       i,j;
