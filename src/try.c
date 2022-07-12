@@ -58,9 +58,9 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 
 int main(int argc,char **args)
 { // parameters
-  PetscInt       n_training = 1 * 1000;//max 100*1000
+  PetscInt       n_training = 1000;//1 * 1000;//max 100*1000
   PetscInt       n_test = 1 * 1000;
-  PetscInt       n_regressors = 100;
+  PetscInt       n_regressors = 2;
   PetscInt       i,j;
   PetscScalar    value;
   PetscErrorCode ierr;
@@ -69,6 +69,7 @@ int main(int argc,char **args)
   Vec            y_train;            // training_output
   Vec            cross_covariance;   // cross_covariance
   Mat            K;                  // covariance matrix
+  Mat            L;                  // Cholesky decomposition
   // GP hyperparameters
   // hyperparameters[0] = lengthscale
   // hyperparameters[1] = vertical_lengthscale
@@ -145,7 +146,14 @@ int main(int argc,char **args)
   ierr = MatSetSizes(K,PETSC_DECIDE,PETSC_DECIDE,n_training,n_training);CHKERRQ(ierr);
   ierr = MatSetFromOptions(K);CHKERRQ(ierr);
   ierr = MatSetUp(K);CHKERRQ(ierr);
-  // for latter: MatCreateSBAIJ
+  ierr = MatDuplicate(K,MAT_DO_NOT_COPY_VALUES,&L);
+  /*
+  // Create Cholesky matrix
+  ierr = MatCreate(PETSC_COMM_WORLD,&L);CHKERRQ(ierr);
+  ierr = MatSetSizes(L,PETSC_DECIDE,PETSC_DECIDE,n_training,n_training);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(L);CHKERRQ(ierr);
+  ierr = MatSetUp(L);CHKERRQ(ierr);
+  */
   //////////////////////////////////////////////////////////////////////////////
   // Assemble Petsc structures
   // Assemble output vector
@@ -185,6 +193,18 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // Compute cholesky decompostion of K
+  KSP            ksp;          /* linear solver context */
+  PC             pc;           /* preconditioner context */
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,K,K);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = PCFactorGetMatrix(pc,&L);
+  //PCCreate(MPI_Comm comm,PC *newpc)
+  //PCSetUp()
 
   //////////////////////////////////////////////////////////////////////////////
   // Make predictions
@@ -198,7 +218,7 @@ VecSetValues(cross_covariance,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
 
 
 
-
+  printf("Terminated");
   // finalize Petsc
   ierr = PetscFinalize(); CHKERRQ(ierr);
   return ierr;
