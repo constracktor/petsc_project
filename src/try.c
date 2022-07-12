@@ -59,7 +59,7 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 int main(int argc,char **args)
 { // parameters
   PetscInt       n_training = 4 * 1000;//max 100*1000
-  PetscInt       n_test = 1 * 1000;
+  PetscInt       n_test = 1 * 1000;//max 100*1000
   PetscInt       n_regressors = 100;
   PetscInt       i,j;
   PetscScalar    value;
@@ -173,12 +173,16 @@ int main(int argc,char **args)
     // y_train contains the training output
     ierr = VecSetValues(y_train,1,&i,&training_output[i],INSERT_VALUES);CHKERRQ(ierr);
   }
+  ierr = VecAssemblyBegin(y_train);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(y_train);CHKERRQ(ierr);
   // Assemble test output vector
   for (i = 0; i < n_test; i++)
   {
     // y_train contains the training output
     ierr = VecSetValues(y_test,1,&i,&test_output[i],INSERT_VALUES);CHKERRQ(ierr);
   }
+  ierr = VecAssemblyBegin(y_test);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(y_test);CHKERRQ(ierr);
   // Assemble covariance matrix
   for (i = 0; i < n_training; i++)
   {
@@ -272,7 +276,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(y_test,-1.0,test_prediction);CHKERRQ(ierr);
   PetscReal error;
   ierr = VecNorm(y_test,NORM_2,&error);CHKERRQ(ierr);
-  printf("Error: %lf\n", error);
+  printf("Average Error: %lf\n", error / n_test);
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
@@ -286,7 +290,6 @@ int main(int argc,char **args)
   ierr = MatDestroy(&K);CHKERRQ(ierr);
   //ierr = MatDestroy(&L);CHKERRQ(ierr);
   //ierr = PCDestroy(&pc);CHKERRQ(ierr);
-
   printf("Terminated\n");
   // finalize Petsc
   ierr = PetscFinalize(); CHKERRQ(ierr);
