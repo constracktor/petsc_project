@@ -205,8 +205,6 @@ int main(int argc,char **args)
 
   //ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   //ierr = PCFactorGetMatrix(pc,&L)CHKERRQ(ierr);;
-
-
   ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
   ierr = PCSetOperators(pc,K,K);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
@@ -223,7 +221,16 @@ VecSetValues(cross_covariance,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
 */
 
 
-
+  /*
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+  */
+  ierr = VecDestroy(&y_train);CHKERRQ(ierr);
+  ierr = VecDestroy(&cross_covariance);CHKERRQ(ierr);
+  ierr = MatDestroy(&K);CHKERRQ(ierr);
+  ierr = MatDestroy(&L);CHKERRQ(ierr);
+  ierr = PCDestroy(&pc);CHKERRQ(ierr);
+  
   printf("Terminated");
   // finalize Petsc
   ierr = PetscFinalize(); CHKERRQ(ierr);
