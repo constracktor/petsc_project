@@ -169,11 +169,11 @@ int main(int argc,char **args)
   // Assemble covariance matrix
   for (i = 0; i < n_training; i++)
   {
+    // compute regressor vectors
+    PetscScalar z_i[n_regressors];
+    compute_regressor_vector(i, n_regressors, training_input, z_i);
     for (j = 0; j < n_training; j++)
     {
-      // compute regressor vectors
-      PetscScalar z_i[n_regressors];
-      compute_regressor_vector(i, n_regressors, training_input, z_i);
       PetscScalar z_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, z_j);
       // compute covariance function
