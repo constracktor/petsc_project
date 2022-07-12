@@ -68,7 +68,7 @@ int main(int argc,char **args)
   // Petsc structures
   Vec            y_train;            // training_output
   Vec            alpha,beta;         // alpha = K^-1 * y_train; L*beta=y_train
-  Vec            cross_covariance;   // cross_covariance
+  Mat            cross_covariance;   // cross_covariance
   Mat            K;                  // covariance matrix
   //Mat            L;                  // Cholesky decomposition
   // GP hyperparameters
@@ -142,8 +142,6 @@ int main(int argc,char **args)
   // Duplicate vector alpha and beta
   ierr = VecDuplicate(y_train,&alpha);CHKERRQ(ierr);
   ierr = VecDuplicate(y_train,&beta);CHKERRQ(ierr);
-  // Duplicate vector cross_covariance
-  ierr = VecDuplicate(y_train,&cross_covariance);CHKERRQ(ierr);
   // Create matrix.  When using MatCreate(), the matrix format can
   // be specified at runtime.
   // Create covariance matrix
@@ -154,13 +152,19 @@ int main(int argc,char **args)
   ierr = MatSetUp(K);CHKERRQ(ierr);
   // Create Cholesky matrix
   //ierr = MatDuplicate(K,MAT_DO_NOT_COPY_VALUES,&L);CHKERRQ(ierr);
+  // Create cross covariance matrix
+  ierr = MatCreate(PETSC_COMM_WORLD,&cross_covariance);CHKERRQ(ierr);
+  ierr = MatSetType(cross_covariance, MATDENSE);CHKERRQ(ierr);
+  ierr = MatSetSizes(cross_covariance,PETSC_DECIDE,PETSC_DECIDE,n_test,n_training);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(cross_covariance);CHKERRQ(ierr);
+  ierr = MatSetUp(cross_covariance);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // Assemble Petsc structures
   // Assemble output vector
   for (i = 0; i < n_training; i++)
   {
     // y_train contains the training output
-    VecSetValues(y_train,1,&i,&training_output[i],INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValues(y_train,1,&i,&training_output[i],INSERT_VALUES);CHKERRQ(ierr);
   }
   // Assemble covariance matrix
   for (i = 0; i < n_training; i++)
@@ -186,7 +190,32 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   // print matrix
-  // ierr = MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+  ierr = MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+/*
+  // Assemble cross covariance matrix
+  for (i = 0; i < n_test; i++)
+  {
+    for (j = 0; j < n_training; j++)
+    {
+      // compute regressor vectors
+      PetscScalar z_i[n_regressors];
+      compute_regressor_vector(i, n_regressors, training_input, z_i);
+      PetscScalar z_j[n_regressors];
+      compute_regressor_vector(j, n_regressors, training_input, z_j);
+      // compute covariance function
+      PetscScalar covariance_function = compute_covariance_fuction(n_regressors, z_i, z_j, hyperparameters);
+      // add noise_variance on diagonal
+      if (i==j)
+      {
+        covariance_function += hyperparameters[2];
+      }
+      // write covariance function value to covariance matrix
+      ierr = MatSetValues(K,1,&i,1,&j,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  */
   //////////////////////////////////////////////////////////////////////////////
   // Compute cholesky decompostion of K
   /*
@@ -227,10 +256,27 @@ int main(int argc,char **args)
   // print vector
   ierr = VecView(alpha,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
-  // Make predictions
-  for (i = 0; i < n_test;i++)
+  // Make predictions -REWRITE TO matrix
+/*
+  PetscScalar predictions[n_test];
+  for (j = 0; j < n_test;j++)
   {
-
+    // make one step prediction
+    // compute regressor vector of prediction_input
+    PetscScalar z_hat[n_regressors];
+    compute_regressor_vector(j, n_regressors, test_input, z_hat);
+    for (i = 0; i < n_training;i++)
+    {
+      // compute regressor vector of training sample
+      PetscScalar z_i[n_regressors];
+      compute_regressor_vector(i, n_regressors, training_input, z_i);
+      // compute covariance function
+      PetscScalar covariance_function = compute_covariance_fuction(n_regressors, z_hat, z_i, hyperparameters);
+      // add value to cross covariance
+      ierr = VecSetValues(cross_covariance,1,&i,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    // make prediction  mu = cross_covariance^T*alpha
+*
   }
 
 /*
@@ -249,7 +295,7 @@ VecSetValues(cross_covariance,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecDestroy(&y_train);CHKERRQ(ierr);
   ierr = VecDestroy(&alpha);CHKERRQ(ierr);
   ierr = VecDestroy(&beta);CHKERRQ(ierr);
-  ierr = VecDestroy(&cross_covariance);CHKERRQ(ierr);
+  ierr = MatDestroy(&cross_covariance);CHKERRQ(ierr);
   ierr = MatDestroy(&K);CHKERRQ(ierr);
   //ierr = MatDestroy(&L);CHKERRQ(ierr);
   //ierr = PCDestroy(&pc);CHKERRQ(ierr);
