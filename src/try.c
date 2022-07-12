@@ -67,7 +67,7 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   // Petsc structures
   Vec            y_train;            // training_output
-  Vec            alpha;              // alpha = K^-1 * y_train
+  Vec            alpha,beta;         // alpha = K^-1 * y_train; L*beta=y_train
   Vec            cross_covariance;   // cross_covariance
   Mat            K;                  // covariance matrix
   //Mat            L;                  // Cholesky decomposition
@@ -139,8 +139,9 @@ int main(int argc,char **args)
   ierr = VecCreate(PETSC_COMM_WORLD,&y_train);CHKERRQ(ierr);
   ierr = VecSetSizes(y_train,PETSC_DECIDE,n_training);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y_train);CHKERRQ(ierr);
-  // Duplicate vector alpha
+  // Duplicate vector alpha and beta
   ierr = VecDuplicate(y_train,&alpha);CHKERRQ(ierr);
+  ierr = VecDuplicate(y_train,&beta);CHKERRQ(ierr);
   // Duplicate vector cross_covariance
   ierr = VecDuplicate(y_train,&cross_covariance);CHKERRQ(ierr);
   // Create matrix.  When using MatCreate(), the matrix format can
@@ -180,18 +181,12 @@ int main(int argc,char **args)
       }
       // write covariance function value to covariance matrix
       ierr = MatSetValues(K,1,&i,1,&j,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
-
-      if (j == i)
-      {
-        printf("\n%lf\n\n", covariance_function);
-      }
-
     }
   }
   ierr = MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   // print matrix
-  ierr = MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+  // ierr = MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // Compute cholesky decompostion of K
   /*
@@ -222,8 +217,22 @@ int main(int argc,char **args)
   ierr = ISCreate(PETSC_COMM_WORLD,&is);CHKERRQ(ierr);
   ierr = MatCholeskyFactor(K,is,&info);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
+  // Compute alpha
+  // solve first triangular matrix system L*beta=y_train
+  ierr = MatSolve(K,y_train,beta);CHKERRQ(ierr);
+  // print vector
+  ierr = VecView(beta,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  // solve second triangular system L^T*alpha=beta
+  ierr = MatSolveTranspose(K,beta,alpha);CHKERRQ(ierr);
+  // print vector
+  ierr = VecView(alpha,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //////////////////////////////////////////////////////////////////////////////
   // Make predictions
-  //PetscErrorCode MatSolve(Mat mat,Vec b,Vec x)
+  for (i = 0; i < n_test;i++)
+  {
+
+  }
+
 /*
 // cross_covariance
 PetscScalar prediction_input[n_regressors];
@@ -239,6 +248,7 @@ VecSetValues(cross_covariance,1,&i,u_i,INSERT_VALUES);CHKERRQ(ierr);
   */
   ierr = VecDestroy(&y_train);CHKERRQ(ierr);
   ierr = VecDestroy(&alpha);CHKERRQ(ierr);
+  ierr = VecDestroy(&beta);CHKERRQ(ierr);
   ierr = VecDestroy(&cross_covariance);CHKERRQ(ierr);
   ierr = MatDestroy(&K);CHKERRQ(ierr);
   //ierr = MatDestroy(&L);CHKERRQ(ierr);
