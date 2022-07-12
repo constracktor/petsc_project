@@ -58,7 +58,7 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 
 int main(int argc,char **args)
 { // parameters
-  PetscInt       n_training = 4 * 1000;//max 100*1000
+  PetscInt       n_training = 8 * 1000;//max 100*1000
   PetscInt       n_test = 1 * 1000;//max 100*1000
   PetscInt       n_regressors = 100;
   PetscInt       i,j;
@@ -260,17 +260,17 @@ int main(int argc,char **args)
   // solve first triangular matrix system L*beta=y_train
   ierr = MatSolve(K,y_train,beta);CHKERRQ(ierr);
   // print vector
-  ierr = VecView(beta,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = VecView(beta,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   // solve second triangular system L^T*alpha=beta
   ierr = MatSolveTranspose(K,beta,alpha);CHKERRQ(ierr);
   // print vector
-  ierr = VecView(alpha,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = VecView(alpha,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // Make predictions
   ierr = MatMult(cross_covariance,alpha,test_prediction);CHKERRQ(ierr);
   // print vectors
-  ierr = VecView(y_test,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = VecView(y_test,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //ierr = VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // Compute euklidian norm between vectors
   ierr = VecAXPY(y_test,-1.0,test_prediction);CHKERRQ(ierr);
