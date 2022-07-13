@@ -5,29 +5,6 @@
 #undef __FUNCT__
 #define __FUNCT__ "main"
 
-void standardize(PetscInt array_size, PetscScalar *array)//needs later to return mean and std
-{
-  // compute mean
-  PetscScalar mean = 0.0;
-  for (PetscInt i = 0; i < array_size; i++)
-  {
-    mean += array[i];
-  }
-  mean = mean / array_size;
-  // compute standard deviation
-  PetscScalar standard_deviation = 0.0;
-  for(PetscInt i = 0; i < array_size; i++)
-  {
-    standard_deviation += PetscPowReal(array[i] - mean,2);
-  }
-  standard_deviation = PetscSqrtReal(standard_deviation / array_size);
-  // standardize input array
-  for(PetscInt i = 0; i < array_size; i++)
-  {
-    array[i] = (array[i] - mean) / standard_deviation;
-  }
-}
-
 void compute_regressor_vector(PetscInt row, PetscInt n_regressors, PetscScalar *training_input, PetscScalar *u_row )
 {
    for (PetscInt i = 0; i < n_regressors; i++)
@@ -58,8 +35,8 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 
 int main(int argc,char **args)
 { // parameters
-  PetscInt       n_training = 8 * 1000;//max 100*1000
-  PetscInt       n_test = 1 * 1000;//max 100*1000
+  PetscInt       n_training = 2 * 1000;//max 100*1000
+  PetscInt       n_test = 100;//1 * 1000;//max 5*1000
   PetscInt       n_regressors = 100;
   PetscInt       i,j;
   PetscScalar    value;
@@ -127,9 +104,6 @@ int main(int argc,char **args)
   fclose(test_input_file);
   fclose(test_output_file);
   //////////////////////////////////////////////////////////////////////////////
-  // standardize data for stability
-  //standardize(n_training, training_input);
-  //standardize(n_training, training_output);
   // initalize hyperparameters to empirical moments of the data
   hyperparameters[0] = 1.0;// variance of training_output
   hyperparameters[1] = 1.0;// standard deviation of training_input
@@ -267,8 +241,8 @@ int main(int argc,char **args)
   // print vectors
   //ierr = VecView(beta,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //ierr = VecView(alpha,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //ierr = VecView(y_test,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //ierr = VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(y_test,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // Compute euklidian norm between vectors
   ierr = VecAXPY(y_test,-1.0,test_prediction);CHKERRQ(ierr);
