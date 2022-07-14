@@ -35,11 +35,12 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 
 int main(int argc,char **args)
 { // parameters
-  PetscInt       n_training = 2 * 1000;//max 100*1000
+  PetscInt       n_train = 2 * 1000;//max 100*1000
   PetscInt       n_test = 1000;//1 * 1000;//max 5*1000
   PetscInt       n_regressors = 100;
   PetscInt       i,j;
-  PetscScalar    value;
+  PetscInt       rstart_train,rend_train,n_train_local;
+  PetscInt       rstart_test,rend_test,n_test_local;
   // GP hyperparameters
   // hyperparameters[0] = lengthscale
   // hyperparameters[1] = vertical_lengthscale
@@ -50,16 +51,15 @@ int main(int argc,char **args)
   hyperparameters[1] = 1.0;// standard deviation of training_input
   hyperparameters[2] = 0.001; // experience?
   // Petsc structures
-  Vec            y_train;            // training_output
-  Vec            alpha,beta;         // alpha = K^-1 * y_train; L*beta=y_train
+  Vec            y_train,alpha,beta;    // training_output; alpha = K^-1 * y_train; L*beta=y_train
   Vec            y_test,test_prediction;
-  Mat            cross_covariance;
-  Mat            K;                  // covariance matrix
+  Mat            K;                     // covariance matrix
+  Mat            cross_covariance;      // cross covariance for a test samples
   //Mat            L;                  // Cholesky decomposition
 
   // data holders
-  PetscScalar   training_input[n_training];
-  PetscScalar   training_output[n_training];
+  PetscScalar   training_input[n_train];
+  PetscScalar   training_output[n_train];
   PetscScalar   test_input[n_test];
   PetscScalar   test_output[n_test];
   // data files
@@ -69,7 +69,6 @@ int main(int argc,char **args)
   FILE    *test_output_file;
   // Petsc initialization
   PetscCall(PetscInitialize(&argc,&args,(char*)0,PETSC_NULL));
-  //PetscCall(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   //////////////////////////////////////////////////////////////////////////////
   // loadtraining and test data from .txt files
   training_input_file = fopen("data/training/training_input.txt", "r");
@@ -82,20 +81,16 @@ int main(int argc,char **args)
     return 1;
   }
   // load training data
-  for (i = 0; i < n_training; i++)
+  for (i = 0; i < n_train; i++)
   {
-    fscanf(training_input_file,type,&value);
-    training_input[i] = value;
-    fscanf(training_output_file,type,&value);
-    training_output[i] = value;
+    fscanf(training_input_file,type,&training_input[i]);
+    fscanf(training_output_file,type,&training_output[i]);
   }
   // load test data
   for (i = 0; i < n_test; i++)
   {
-    fscanf(test_input_file,type,&value);
-    test_input[i] = value;
-    fscanf(test_output_file,type,&value);
-    test_output[i] = value;
+    fscanf(test_input_file,type,&test_input[i]);
+    fscanf(test_output_file,type,&test_output[i]);
   }
   // close file streams
   fclose(training_input_file);
@@ -106,7 +101,7 @@ int main(int argc,char **args)
   // Create Petsc structures
   // Create vector y_train
   PetscCall(VecCreate(PETSC_COMM_WORLD,&y_train));
-  PetscCall(VecSetSizes(y_train,PETSC_DECIDE,n_training));
+  PetscCall(VecSetSizes(y_train,PETSC_DECIDE,n_train));
   PetscCall(VecSetFromOptions(y_train));
   // Duplicate vector alpha and beta
   PetscCall(VecDuplicate(y_train,&alpha));
@@ -117,12 +112,17 @@ int main(int argc,char **args)
   PetscCall(VecSetFromOptions(y_test));
   // Duplicate vector test_prediction
   PetscCall(VecDuplicate(y_test,&test_prediction));
+  // Identify starting and ending points (We let PETSc decide above)
+  PetscCall(VecGetOwnershipRange(y_train,&rstart_train,&rend_train));
+  PetscCall(VecGetLocalSize(y_train,&n_train_local));
+  //PetscCall(VecGetOwnershipRange(y_test,&rstart_test,&rend_test));
+  //PetscCall(VecGetLocalSize(y_test,&n_test_local));
   // Create matrix.  When using MatCreate(), the matrix format can
   // be specified at runtime.
   // Create covariance matrix
   PetscCall(MatCreate(PETSC_COMM_WORLD,&K));
   PetscCall(MatSetType(K, MATDENSE));
-  PetscCall(MatSetSizes(K,PETSC_DECIDE,PETSC_DECIDE,n_training,n_training));
+  PetscCall(MatSetSizes(K,n_train_local,n_train_local,n_train,n_train));
   PetscCall(MatSetFromOptions(K));
   PetscCall(MatSetUp(K));
   // Create Cholesky matrix
@@ -130,13 +130,13 @@ int main(int argc,char **args)
   // Create cross covariance matrix
   PetscCall(MatCreate(PETSC_COMM_WORLD,&cross_covariance));
   PetscCall(MatSetType(cross_covariance, MATDENSE));
-  PetscCall(MatSetSizes(cross_covariance,PETSC_DECIDE,PETSC_DECIDE,n_test,n_training));
+  PetscCall(MatSetSizes(cross_covariance,n_test_local,n_test_local,n_test,n_train));
   PetscCall(MatSetFromOptions(cross_covariance));
   PetscCall(MatSetUp(cross_covariance));
   //////////////////////////////////////////////////////////////////////////////
   // Assemble Petsc structures
   // Assemble training output vector
-  for (i = 0; i < n_training; i++)
+  for (i = 0; i < n_train; i++)
   {
     // y_train contains the training output
     PetscCall(VecSetValues(y_train,1,&i,&training_output[i],INSERT_VALUES));
@@ -152,12 +152,12 @@ int main(int argc,char **args)
   PetscCall(VecAssemblyBegin(y_test));
   PetscCall(VecAssemblyEnd(y_test));
   // Assemble covariance matrix
-  for (i = 0; i < n_training; i++)
+  for (i = 0; i < n_train; i++)
   {
     // compute regressor vectors
     PetscScalar z_i[n_regressors];
     compute_regressor_vector(i, n_regressors, training_input, z_i);
-    for (j = 0; j < n_training; j++)
+    for (j = 0; j < n_train; j++)
     {
       PetscScalar z_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, z_j);
@@ -182,7 +182,7 @@ int main(int argc,char **args)
     // compute regressor vectors
     PetscScalar z_i_hat[n_regressors];
     compute_regressor_vector(i, n_regressors, test_input, z_i_hat);
-    for (j = 0; j < n_training; j++)
+    for (j = 0; j < n_train; j++)
     {
       PetscScalar z_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, z_j);
