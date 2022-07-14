@@ -35,8 +35,8 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 
 int main(int argc,char **args)
 { // GP parameters
-  PetscInt       n_train = 10 * 1000;//max 100*1000
-  PetscInt       n_test = 2 * 1000;//max 5*1000
+  PetscInt       n_train = 100 * 1000;  //max 100*1000
+  PetscInt       n_test = 5 * 1000;     //max 5*1000
   PetscInt       n_regressors = 100;
   PetscScalar    hyperparameters[3];
   // initalize hyperparameters to empirical moments of the data

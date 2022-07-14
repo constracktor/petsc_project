@@ -6,10 +6,10 @@
 # sudo docker run -it --rm --user user --name petsc_container petsc_image
 #
 # Compile Code:
-# cd petsc_project/src && make hello_p
+# cd petsc_project/src && make petsc_cholesky
 #
 # Run Code:
-# mpirun -n 4 hello_p
+# mpirun -n 6 petsc_cholesky -n_train 100000 -n_test 5000
 #
 # Update Repository:
 # git add . && git commit -m "comment" && git push
@@ -36,9 +36,5 @@ RUN cd petsc && ./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --wi
 # export petsc
 RUN export PETSC_DIR=$HOME/petsc && export PETSC_ARCH=petsc-arch
 
-# remove docker error message
+# remove docker error message (somehow does not work and needs to be done manually)
 RUN export OMPI_MCA_btl_vader_single_copy_mechanism=none
-
-# OPTIONAL:
-# mount folder
-# sudo docker run -it --rm --user user --mount type=bind,source="$(pwd)",target=/usr/src/petsc_project --name petsc_container petsc_image
