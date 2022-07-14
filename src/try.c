@@ -40,8 +40,6 @@ int main(int argc,char **args)
   PetscInt       n_regressors = 100;
   PetscInt       i,j;
   PetscScalar    value;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
   // GP hyperparameters
   // hyperparameters[0] = lengthscale
   // hyperparameters[1] = vertical_lengthscale
@@ -71,7 +69,7 @@ int main(int argc,char **args)
   FILE    *test_output_file;
   // Petsc initialization
   PetscCall(PetscInitialize(&argc,&args,(char*)0,PETSC_NULL));
-  //ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  //PetscCall(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   //////////////////////////////////////////////////////////////////////////////
   // loadtraining and test data from .txt files
   training_input_file = fopen("data/training/training_input.txt", "r");
@@ -107,52 +105,52 @@ int main(int argc,char **args)
   //////////////////////////////////////////////////////////////////////////////
   // Create Petsc structures
   // Create vector y_train
-  ierr = VecCreate(PETSC_COMM_WORLD,&y_train);CHKERRQ(ierr);
-  ierr = VecSetSizes(y_train,PETSC_DECIDE,n_training);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(y_train);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&y_train));
+  PetscCall(VecSetSizes(y_train,PETSC_DECIDE,n_training));
+  PetscCall(VecSetFromOptions(y_train));
   // Duplicate vector alpha and beta
-  ierr = VecDuplicate(y_train,&alpha);CHKERRQ(ierr);
-  ierr = VecDuplicate(y_train,&beta);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(y_train,&alpha));
+  PetscCall(VecDuplicate(y_train,&beta));
   // Create vector test_prediction
-  ierr = VecCreate(PETSC_COMM_WORLD,&y_test);CHKERRQ(ierr);
-  ierr = VecSetSizes(y_test,PETSC_DECIDE,n_test);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(y_test);CHKERRQ(ierr);
+  PetscCall(VecCreate(PETSC_COMM_WORLD,&y_test));
+  PetscCall(VecSetSizes(y_test,PETSC_DECIDE,n_test));
+  PetscCall(VecSetFromOptions(y_test));
   // Duplicate vector test_prediction
-  ierr = VecDuplicate(y_test,&test_prediction);CHKERRQ(ierr);
+  PetscCall(VecDuplicate(y_test,&test_prediction));
   // Create matrix.  When using MatCreate(), the matrix format can
   // be specified at runtime.
   // Create covariance matrix
-  ierr = MatCreate(PETSC_COMM_WORLD,&K);CHKERRQ(ierr);
-  ierr = MatSetType(K, MATDENSE);CHKERRQ(ierr);
-  ierr = MatSetSizes(K,PETSC_DECIDE,PETSC_DECIDE,n_training,n_training);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(K);CHKERRQ(ierr);
-  ierr = MatSetUp(K);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&K));
+  PetscCall(MatSetType(K, MATDENSE));
+  PetscCall(MatSetSizes(K,PETSC_DECIDE,PETSC_DECIDE,n_training,n_training));
+  PetscCall(MatSetFromOptions(K));
+  PetscCall(MatSetUp(K));
   // Create Cholesky matrix
-  //ierr = MatDuplicate(K,MAT_DO_NOT_COPY_VALUES,&L);CHKERRQ(ierr);
+  //PetscCall(MatDuplicate(K,MAT_DO_NOT_COPY_VALUES,&L));
   // Create cross covariance matrix
-  ierr = MatCreate(PETSC_COMM_WORLD,&cross_covariance);CHKERRQ(ierr);
-  ierr = MatSetType(cross_covariance, MATDENSE);CHKERRQ(ierr);
-  ierr = MatSetSizes(cross_covariance,PETSC_DECIDE,PETSC_DECIDE,n_test,n_training);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(cross_covariance);CHKERRQ(ierr);
-  ierr = MatSetUp(cross_covariance);CHKERRQ(ierr);
+  PetscCall(MatCreate(PETSC_COMM_WORLD,&cross_covariance));
+  PetscCall(MatSetType(cross_covariance, MATDENSE));
+  PetscCall(MatSetSizes(cross_covariance,PETSC_DECIDE,PETSC_DECIDE,n_test,n_training));
+  PetscCall(MatSetFromOptions(cross_covariance));
+  PetscCall(MatSetUp(cross_covariance));
   //////////////////////////////////////////////////////////////////////////////
   // Assemble Petsc structures
   // Assemble training output vector
   for (i = 0; i < n_training; i++)
   {
     // y_train contains the training output
-    ierr = VecSetValues(y_train,1,&i,&training_output[i],INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(y_train,1,&i,&training_output[i],INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(y_train);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(y_train);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(y_train));
+  PetscCall(VecAssemblyEnd(y_train));
   // Assemble test output vector
   for (i = 0; i < n_test; i++)
   {
     // y_train contains the training output
-    ierr = VecSetValues(y_test,1,&i,&test_output[i],INSERT_VALUES);CHKERRQ(ierr);
+    PetscCall(VecSetValues(y_test,1,&i,&test_output[i],INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(y_test);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(y_test);CHKERRQ(ierr);
+  PetscCall(VecAssemblyBegin(y_test));
+  PetscCall(VecAssemblyEnd(y_test));
   // Assemble covariance matrix
   for (i = 0; i < n_training; i++)
   {
@@ -171,13 +169,13 @@ int main(int argc,char **args)
         covariance_function += hyperparameters[2];
       }
       // write covariance function value to covariance matrix
-      ierr = MatSetValues(K,1,&i,1,&j,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(K,1,&i,1,&j,&covariance_function,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY));
   // print matrix
-  //ierr = MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+  //PetscCall(MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
   // Assemble cross covariance matrix
   for (i = 0; i < n_test; i++)
   {
@@ -191,75 +189,75 @@ int main(int argc,char **args)
       // compute covariance function
       PetscScalar covariance_function = compute_covariance_fuction(n_regressors, z_i_hat, z_j, hyperparameters);
       // write covariance function value to covariance matrix
-      ierr = MatSetValues(cross_covariance,1,&i,1,&j,&covariance_function,INSERT_VALUES);CHKERRQ(ierr);
+      PetscCall(MatSetValues(cross_covariance,1,&i,1,&j,&covariance_function,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(cross_covariance,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(cross_covariance,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscCall(MatAssemblyBegin(cross_covariance,MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(cross_covariance,MAT_FINAL_ASSEMBLY));
   //////////////////////////////////////////////////////////////////////////////
   // Compute cholesky decompostion of K
   /*
   // VARIANT 1: use ksp and pc
   KSP            ksp;          //linear solver context
   PC             pc;           // preconditioner context
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,K,K);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = PCFactorGetMatrix(pc,&L)CHKERRQ(ierr);;
+  PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  PetscCall(KSPSetOperators(ksp,K,K));
+  PetscCall(KSPGetPC(ksp,&pc));
+  PetscCall(PCSetType(pc,PCCHOLESKY));
+  PetscCall(KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+  PetscCall(KSPSetFromOptions(ksp));
+  PetscCall(PCFactorGetMatrix(pc,&L)CHKERRQ(ierr);;
   */
   /*
   // VARIANT 2: use pc only
   PC             pc;           // preconditioner context
-  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
-  ierr = PCSetOperators(pc,K,K);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
-  ierr = PCSetUp(pc);CHKERRQ(ierr);
-  ierr = PCFactorGetMatrix(pc,&L);CHKERRQ(ierr);
+  PetscCall(PCCreate(PETSC_COMM_WORLD,&pc));
+  PetscCall(PCSetOperators(pc,K,K));
+  PetscCall(PCSetType(pc,PCCHOLESKY));
+  PetscCall(PCSetUp(pc));
+  PetscCall(PCFactorGetMatrix(pc,&L));
   */
   // VARIANT 3: use mat routines for inplace cholesky
   MatFactorInfo info;
   IS is;
-  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-  ierr = ISCreate(PETSC_COMM_WORLD,&is);CHKERRQ(ierr);
-  ierr = MatCholeskyFactor(K,is,&info);CHKERRQ(ierr);
+  PetscCall(MatFactorInfoInitialize(&info));
+  PetscCall(ISCreate(PETSC_COMM_WORLD,&is));
+  PetscCall(MatCholeskyFactor(K,is,&info));
   //////////////////////////////////////////////////////////////////////////////
   // Compute alpha
   // solve first triangular matrix system L*beta=y_train
-  ierr = MatSolve(K,y_train,beta);CHKERRQ(ierr);
+  PetscCall(MatSolve(K,y_train,beta));
   // solve second triangular system L^T*alpha=beta
-  ierr = MatSolveTranspose(K,beta,alpha);CHKERRQ(ierr);
+  PetscCall(MatSolveTranspose(K,beta,alpha));
   //////////////////////////////////////////////////////////////////////////////
   // Make predictions
-  ierr = MatMult(cross_covariance,alpha,test_prediction);CHKERRQ(ierr);
+  PetscCall(MatMult(cross_covariance,alpha,test_prediction));
   // print vectors
-  //ierr = VecView(beta,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //ierr = VecView(alpha,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(y_test,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  //PetscCall(VecView(beta,PETSC_VIEWER_STDOUT_WORLD));
+  //PetscCall(VecView(alpha,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(y_test,PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD));
   //////////////////////////////////////////////////////////////////////////////
   // Compute euklidian norm between vectors
-  ierr = VecAXPY(y_test,-1.0,test_prediction);CHKERRQ(ierr);
+  PetscCall(VecAXPY(y_test,-1.0,test_prediction));
   PetscReal error;
-  ierr = VecNorm(y_test,NORM_2,&error);CHKERRQ(ierr);
+  PetscCall(VecNorm(y_test,NORM_2,&error));
   printf("Average Error: %lf\n", error / n_test);
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(&y_train);CHKERRQ(ierr);
-  ierr = VecDestroy(&y_test);CHKERRQ(ierr);
-  ierr = VecDestroy(&alpha);CHKERRQ(ierr);
-  ierr = VecDestroy(&beta);CHKERRQ(ierr);
-  ierr = VecDestroy(&test_prediction);CHKERRQ(ierr);
-  ierr = MatDestroy(&cross_covariance);CHKERRQ(ierr);
-  ierr = MatDestroy(&K);CHKERRQ(ierr);
-  //ierr = MatDestroy(&L);CHKERRQ(ierr);
-  //ierr = PCDestroy(&pc);CHKERRQ(ierr);
+  PetscCall(VecDestroy(&y_train));
+  PetscCall(VecDestroy(&y_test));
+  PetscCall(VecDestroy(&alpha));
+  PetscCall(VecDestroy(&beta));
+  PetscCall(VecDestroy(&test_prediction));
+  PetscCall(MatDestroy(&cross_covariance));
+  PetscCall(MatDestroy(&K));
+  //PetscCall(MatDestroy(&L));
+  //PetscCall(PCDestroy(&pc));
   printf("Terminated\n");
   // finalize Petsc
-  ierr = PetscFinalize(); CHKERRQ(ierr);
-  return ierr;
+  PetscCall(PetscFinalize());
+  return 0;
 }
