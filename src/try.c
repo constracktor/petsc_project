@@ -69,6 +69,9 @@ int main(int argc,char **args)
   FILE    *test_output_file;
   // Petsc initialization
   PetscCall(PetscInitialize(&argc,&args,(char*)0,PETSC_NULL));
+  // Get training and test size if given
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_train",&n_train,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_test",&n_test,NULL));
   //////////////////////////////////////////////////////////////////////////////
   // loadtraining and test data from .txt files
   training_input_file = fopen("data/training/training_input.txt", "r");
