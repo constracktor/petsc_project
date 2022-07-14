@@ -136,19 +136,30 @@ int main(int argc,char **args)
   //////////////////////////////////////////////////////////////////////////////
   // Assemble Petsc structures
   // Assemble training output vector
+  /*
   for (i = 0; i < n_train; i++)
   {
     // y_train contains the training output
     PetscCall(VecSetValues(y_train,1,&i,&training_output[i],INSERT_VALUES));
   }
+  */
+  PetscInt indices[n_train];
+  for (i = 0; i < n_train; i++)
+  {
+    indices[i] = i;
+  }
+  PetscCall(VecSetValues(y_train,n_train,indices,training_output,INSERT_VALUES));
   PetscCall(VecAssemblyBegin(y_train));
   PetscCall(VecAssemblyEnd(y_train));
   // Assemble test output vector
+  /*
   for (i = 0; i < n_test; i++)
   {
     // y_train contains the training output
     PetscCall(VecSetValues(y_test,1,&i,&test_output[i],INSERT_VALUES));
   }
+  */
+  PetscCall(VecSetValues(y_test,n_test,indices,test_output,INSERT_VALUES));
   PetscCall(VecAssemblyBegin(y_test));
   PetscCall(VecAssemblyEnd(y_test));
   // Assemble covariance matrix
