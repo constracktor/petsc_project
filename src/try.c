@@ -35,13 +35,22 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 
 int main(int argc,char **args)
 { // parameters
-  PetscInt       n_training = 8 * 1000;//max 100*1000
+  PetscInt       n_training = 2 * 1000;//max 100*1000
   PetscInt       n_test = 1000;//1 * 1000;//max 5*1000
   PetscInt       n_regressors = 100;
   PetscInt       i,j;
   PetscScalar    value;
   PetscErrorCode ierr;
   PetscMPIInt    size;
+  // GP hyperparameters
+  // hyperparameters[0] = lengthscale
+  // hyperparameters[1] = vertical_lengthscale
+  // hyperparameters[2] = noise_variance
+  PetscScalar hyperparameters[3];
+  // initalize hyperparameters to empirical moments of the data
+  hyperparameters[0] = 1.0;// variance of training_output
+  hyperparameters[1] = 1.0;// standard deviation of training_input
+  hyperparameters[2] = 0.001; // experience?
   // Petsc structures
   Vec            y_train;            // training_output
   Vec            alpha,beta;         // alpha = K^-1 * y_train; L*beta=y_train
@@ -49,11 +58,7 @@ int main(int argc,char **args)
   Mat            cross_covariance;
   Mat            K;                  // covariance matrix
   //Mat            L;                  // Cholesky decomposition
-  // GP hyperparameters
-  // hyperparameters[0] = lengthscale
-  // hyperparameters[1] = vertical_lengthscale
-  // hyperparameters[2] = noise_variance
-  PetscScalar hyperparameters[3];
+
   // data holders
   PetscScalar   training_input[n_training];
   PetscScalar   training_output[n_training];
@@ -65,12 +70,8 @@ int main(int argc,char **args)
   FILE    *test_input_file;
   FILE    *test_output_file;
   // Petsc initialization
-  ierr = PetscInitialize(&argc,&args,(char*)0,PETSC_NULL);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if (size != 1)
-  {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
-  }
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,PETSC_NULL));
+  //ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   //////////////////////////////////////////////////////////////////////////////
   // loadtraining and test data from .txt files
   training_input_file = fopen("data/training/training_input.txt", "r");
@@ -103,11 +104,6 @@ int main(int argc,char **args)
   fclose(training_output_file);
   fclose(test_input_file);
   fclose(test_output_file);
-  //////////////////////////////////////////////////////////////////////////////
-  // initalize hyperparameters to empirical moments of the data
-  hyperparameters[0] = 1.0;// variance of training_output
-  hyperparameters[1] = 1.0;// standard deviation of training_input
-  hyperparameters[2] = 0.001; // experience?
   //////////////////////////////////////////////////////////////////////////////
   // Create Petsc structures
   // Create vector y_train
