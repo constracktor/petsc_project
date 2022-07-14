@@ -34,30 +34,30 @@ PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, 
 }
 
 int main(int argc,char **args)
-{ // parameters
-  PetscInt       n_train = 12;//2 * 1000;//max 100*1000
-  PetscInt       n_test = 12;//1 * 1000;//max 5*1000
+{ // GP parameters
+  PetscInt       n_train = 2 * 1000;//max 100*1000
+  PetscInt       n_test = 1 * 1000;//max 5*1000
   PetscInt       n_regressors = 100;
+  PetscScalar    hyperparameters[3];
+  // initalize hyperparameters to empirical moments of the data
+  hyperparameters[0] = 1.0;   // lengthscale = variance of training_output
+  hyperparameters[1] = 1.0;   // vertical_lengthscale = standard deviation of training_input
+  hyperparameters[2] = 0.001; // noise_variance = small value
+  // Petsc structures
   PetscInt       i,j;
   PetscInt       rstart_train,rend_train,n_train_local;
   PetscInt       rstart_test,rend_test,n_test_local;
-  // GP hyperparameters
-  // hyperparameters[0] = lengthscale
-  // hyperparameters[1] = vertical_lengthscale
-  // hyperparameters[2] = noise_variance
-  PetscScalar hyperparameters[3];
-  // initalize hyperparameters to empirical moments of the data
-  hyperparameters[0] = 1.0;// variance of training_output
-  hyperparameters[1] = 1.0;// standard deviation of training_input
-  hyperparameters[2] = 0.001; // experience?
-  // Petsc structures
-  Vec            y_train,alpha;    // training_output; alpha = K^-1 * y_train; L*beta=y_train
-  Vec            y_test,test_prediction;
+  PetscInt       indices[n_train];
+  PetscReal      covariance_function, error;
+  PetscScalar    z_i[n_regressors], z_j[n_regressors];
+  Vec            y_train,alpha;         // training_output; alpha = K^-1 * y_train; L*beta=y_train
+  Vec            y_test,test_prediction;// test_output
   Mat            K;                     // covariance matrix
-  Mat            cross_covariance;      // cross covariance for a test samples
-  Mat            L;                  // Cholesky decomposition
-
-  // data holders
+  Mat            L;                     // Cholesky decomposition
+  Mat            cross_covariance;      // cross covariance of all test samples
+  KSP            ksp;          // linear solver context
+  PC             pc;           // preconditioner context
+  // data holders for assembly
   PetscScalar   training_input[n_train];
   PetscScalar   training_output[n_train];
   PetscScalar   test_input[n_test];
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   PetscCall(VecCreate(PETSC_COMM_WORLD,&y_train));
   PetscCall(VecSetSizes(y_train,PETSC_DECIDE,n_train));
   PetscCall(VecSetFromOptions(y_train));
-  // Duplicate vector alpha and beta
+  // Duplicate vector alpha
   PetscCall(VecDuplicate(y_train,&alpha));
   // Create vector test_prediction
   PetscCall(VecCreate(PETSC_COMM_WORLD,&y_test));
@@ -116,7 +116,7 @@ int main(int argc,char **args)
   PetscCall(VecGetLocalSize(y_train,&n_train_local));
   PetscCall(VecGetOwnershipRange(y_test,&rstart_test,&rend_test));
   PetscCall(VecGetLocalSize(y_test,&n_test_local));
-  printf("start: %d stop: %d\n", rstart_train,rend_train);
+
   // Create matrix.  When using MatCreate(), the matrix format can
   // be specified at runtime.
   // Create covariance matrix
@@ -125,14 +125,8 @@ int main(int argc,char **args)
   PetscCall(MatSetSizes(K,n_train_local,PETSC_DECIDE,n_train,n_train));
   PetscCall(MatSetFromOptions(K));
   PetscCall(MatSetUp(K));
-
   // Create Cholesky matrix
-  PetscCall(MatCreate(PETSC_COMM_WORLD,&L));
-  PetscCall(MatSetType(L, MATMPIDENSE));
-  PetscCall(MatSetSizes(L,n_train_local,PETSC_DECIDE,n_train,n_train));
-  PetscCall(MatSetFromOptions(L));
-  PetscCall(MatSetUp(L));
-  //PetscCall(MatDuplicate(K,MAT_DO_NOT_COPY_VALUES,&L));
+  PetscCall(MatDuplicate(K,MAT_DO_NOT_COPY_VALUES,&L));
   // Create cross covariance matrix
   PetscCall(MatCreate(PETSC_COMM_WORLD,&cross_covariance));
   PetscCall(MatSetType(cross_covariance, MATMPIDENSE));
@@ -141,7 +135,6 @@ int main(int argc,char **args)
   PetscCall(MatSetUp(cross_covariance));
   //////////////////////////////////////////////////////////////////////////////
   // Assemble Petsc structures
-  PetscInt indices[n_train];
   for (i = 0; i < n_train; i++)
   {
     indices[i] = i;
@@ -157,15 +150,12 @@ int main(int argc,char **args)
   // Assemble covariance matrix according to chunks of contiguous rows
   for (i = rstart_train; i < rend_train; i++)
   {
-    // compute regressor vectors
-    PetscScalar z_i[n_regressors];
     compute_regressor_vector(i, n_regressors, training_input, z_i);
     for (j = 0; j < n_train; j++)
     {
-      PetscScalar z_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, z_j);
       // compute covariance function
-      PetscScalar covariance_function = compute_covariance_fuction(n_regressors, z_i, z_j, hyperparameters);
+      covariance_function = compute_covariance_fuction(n_regressors, z_i, z_j, hyperparameters);
       // add noise_variance on diagonal
       if (i==j)
       {
@@ -177,95 +167,51 @@ int main(int argc,char **args)
   }
   PetscCall(MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY));
-  // print matrix
-  PetscCall(MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
-  PetscCall(MatConvert(K,MATELEMENTAL,MAT_INPLACE_MATRIX ,&K));
-  // Assemble cross covariance matrix
+  // Assemble cross covariance matrix according to chunks of contiguous rows
   for (i = rstart_test; i < rend_test; i++)
   {
-    // compute regressor vectors
-    PetscScalar z_i_hat[n_regressors];
-    compute_regressor_vector(i, n_regressors, test_input, z_i_hat);
+    compute_regressor_vector(i, n_regressors, test_input, z_i);
     for (j = 0; j < n_train; j++)
     {
-      PetscScalar z_j[n_regressors];
       compute_regressor_vector(j, n_regressors, training_input, z_j);
       // compute covariance function
-      PetscScalar covariance_function = compute_covariance_fuction(n_regressors, z_i_hat, z_j, hyperparameters);
+      covariance_function = compute_covariance_fuction(n_regressors, z_i, z_j, hyperparameters);
       // write covariance function value to covariance matrix
       PetscCall(MatSetValues(cross_covariance,1,&i,1,&j,&covariance_function,INSERT_VALUES));
     }
   }
   PetscCall(MatAssemblyBegin(cross_covariance,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(cross_covariance,MAT_FINAL_ASSEMBLY));
-  // print matrix
-  //PetscCall(MatView(cross_covariance,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
   //////////////////////////////////////////////////////////////////////////////
-  // Compute cholesky decompostion of K
-
-  // VARIANT 1: use ksp and pc
-  KSP            ksp;          //linear solver context
-  PC             pc;           // preconditioner context
+  // Convert covariance matrix to solver format
+  PetscCall(MatConvert(K,MATELEMENTAL,MAT_INPLACE_MATRIX ,&K));
+  // Setup cholesky solver
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   PetscCall(KSPSetOperators(ksp,K,K));
   PetscCall(KSPGetPC(ksp,&pc));
   PetscCall(KSPSetType(ksp,KSPPREONLY));
   PetscCall(PCSetType(pc,PCCHOLESKY));
-  PetscCall(KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
-  PetscCall(KSPSetFromOptions(ksp));
-  //PetscCall(PCFactorGetMatrix(pc,&L));
-
-  // VARIANT 2: use pc only
-  /*
-  PC             pc;           // preconditioner context
-  PetscCall(PCCreate(PETSC_COMM_WORLD,&pc));
-  PetscCall(PCSetOperators(pc,K,K));
-  PetscCall(PCSetType(pc,PCCHOLESKY));
-  PetscCall(PCSetUp(pc));
-  PetscCall(PCFactorGetMatrix(pc,&L));
-  */
-  /*
-  // VARIANT 3: use mat routines for cholesky
-  PetscCall(MatGetFactor(K, MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&L));
-
-
-  MatFactorInfo info;
-  IS is;
-  PetscCall(MatFactorInfoInitialize(&info));
-  PetscCall(ISCreate(PETSC_COMM_WORLD,&is));
-  PetscCall(MatCholeskyFactorSymbolic(L,K,is,&info));
-  PetscCall(MatCholeskyFactorNumeric(L,K,&info));
-
-  //PetscCall(MatCholeskyFactor(K,is,&info));
-*/
+  PetscCall(PCFactorSetMatSolverType(pc,MATSOLVERELEMENTAL));
+  PetscCall(KSPSetUp(ksp));
   //////////////////////////////////////////////////////////////////////////////
   // Compute alpha
-  // solve first triangular matrix system L*beta=y_train
-  //PetscCall(MatSolve(L,y_train,beta));
-  // solve second triangular system L^T*alpha=beta
-  //PetscCall(MatSolveTranspose(L,beta,alpha));
   PetscCall(KSPSolve(ksp,y_train,alpha));
-
-  /*
-     View solver info; we could instead use the option -ksp_view to
-     print this info to the screen at the conclusion of KSPSolve().
-  */
-  //PetscCall(KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD));
-  //////////////////////////////////////////////////////////////////////////////
   // Make predictions
   PetscCall(MatMult(cross_covariance,alpha,test_prediction));
-  // print vectors
-  //PetscCall(VecView(beta,PETSC_VIEWER_STDOUT_WORLD));
+  // Compute euklidian norm between vectors
+  PetscCall(VecAXPY(y_test,-1.0,test_prediction));
+  PetscCall(VecNorm(y_test,NORM_2,&error));
+  //////////////////////////////////////////////////////////////////////////////
+  //print stuff
   //PetscCall(VecView(alpha,PETSC_VIEWER_STDOUT_WORLD));
   //PetscCall(VecView(y_test,PETSC_VIEWER_STDOUT_WORLD));
   //PetscCall(VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD));
-  //////////////////////////////////////////////////////////////////////////////
-  // Compute euklidian norm between vectors
-  PetscCall(VecAXPY(y_test,-1.0,test_prediction));
-  PetscReal error;
-  PetscCall(VecNorm(y_test,NORM_2,&error));
-
-  // Free work space.  All PETSc objects should be destroyed when they are no longer needed.
+  //PetscCall(KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD));
+  //PetscCall(MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
+  //PetscCall(MatView(cross_covariance,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Start: %d Stop: %d\n", rstart_train,rend_train));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average Error: %lf\n", error / n_test));
+  // Free work space -> All PETSc objects should be destroyed when they are no longer needed.
   PetscCall(VecDestroy(&y_train));
   PetscCall(VecDestroy(&y_test));
   PetscCall(VecDestroy(&alpha));
@@ -273,8 +219,6 @@ int main(int argc,char **args)
   PetscCall(MatDestroy(&cross_covariance));
   PetscCall(MatDestroy(&K));
   PetscCall(MatDestroy(&L));
-
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average Error: %lf\n", error / n_test));
   // finalize Petsc
   PetscCall(PetscFinalize());
   return 0;
