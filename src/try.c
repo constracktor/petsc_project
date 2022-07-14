@@ -115,8 +115,8 @@ int main(int argc,char **args)
   // Identify starting and ending points (We let PETSc decide above)
   PetscCall(VecGetOwnershipRange(y_train,&rstart_train,&rend_train));
   PetscCall(VecGetLocalSize(y_train,&n_train_local));
-  //PetscCall(VecGetOwnershipRange(y_test,&rstart_test,&rend_test));
-  //PetscCall(VecGetLocalSize(y_test,&n_test_local));
+  PetscCall(VecGetOwnershipRange(y_test,&rstart_test,&rend_test));
+  PetscCall(VecGetLocalSize(y_test,&n_test_local));
   // Create matrix.  When using MatCreate(), the matrix format can
   // be specified at runtime.
   // Create covariance matrix
@@ -130,7 +130,7 @@ int main(int argc,char **args)
   // Create cross covariance matrix
   PetscCall(MatCreate(PETSC_COMM_WORLD,&cross_covariance));
   PetscCall(MatSetType(cross_covariance, MATDENSE));
-  PetscCall(MatSetSizes(cross_covariance,n_test_local,n_test_local,n_test,n_train));
+  PetscCall(MatSetSizes(cross_covariance,n_test_local,n_train_local,n_test,n_train));
   PetscCall(MatSetFromOptions(cross_covariance));
   PetscCall(MatSetUp(cross_covariance));
   //////////////////////////////////////////////////////////////////////////////
