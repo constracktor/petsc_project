@@ -6,13 +6,14 @@
 # sudo docker run -it --rm --user user --name petsc_container petsc_image
 #
 # Compile Code:
-# cd petsc_project && git pull --rebase && cd src && make petsc_cholesky && export OMPI_MCA_btl_vader_single_copy_mechanism=none
+# cd && cd petsc_project && git pull --rebase && cd src && make petsc_cholesky && export OMPI_MCA_btl_vader_single_copy_mechanism=none
 #
 # Run Code:
-# mpirun -n 6 petsc_cholesky -n_train 100000 -n_test 5000
+# mpirun -n 6 petsc_cholesky -n_train 100000 -n_test 5000 -n_regressors 100
 #
 # Run Scripts:
-# cd && cd petsc_project/scripts && chmod +x cores_script.sh && ./cores_script.sh && | tee test.txt
+# cd && cd petsc_project/scripts && chmod +x cores_script.sh && ./cores_script.sh | tee -a cores_result.txt
+#
 # Update Repository:
 # git add . && git commit -m "comment" && git push
 # git add . && git commit --amend --no-edit && git push -f

@@ -44,6 +44,7 @@ int main(int argc,char **args)
   hyperparameters[1] = 1.0;   // vertical_lengthscale = standard deviation of training_input
   hyperparameters[2] = 0.001; // noise_variance = small value
   // Petsc structures
+  PetscInt       n_cores;
   PetscInt       i,j;
   PetscInt       rstart_train,rend_train,n_train_local;
   PetscInt       rstart_test,rend_test,n_test_local;
@@ -69,7 +70,8 @@ int main(int argc,char **args)
   FILE    *test_output_file;
   // Petsc initialization
   PetscCall(PetscInitialize(&argc,&args,(char*)0,PETSC_NULL));
-  // Get training and test size if given
+  // Get parameters
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&n_cores));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_train",&n_train,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_test",&n_test,NULL));
   //////////////////////////////////////////////////////////////////////////////
@@ -212,8 +214,10 @@ int main(int argc,char **args)
   //PetscCall(KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD));
   //PetscCall(MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
   //PetscCall(MatView(cross_covariance,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
-  PetscCall(PetscPrintf(PETSC_COMM_SELF,"Start: %d Stop: %d\n", rstart_train,rend_train));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average Error: %lf\n", error / n_test));
+  //PetscCall(PetscPrintf(PETSC_COMM_SELF,"Start: %d Stop: %d\n", rstart_train,rend_train));
+  //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average Error: %lf\n", error / n_test));
+  // print output information
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;time;%lf,%d;%d;%d;\n", n_cores, error / n_test, n_train, n_test, n_regressors));
   // Free work space -> All PETSc objects should be destroyed when they are no longer needed.
   PetscCall(VecDestroy(&y_train));
   PetscCall(VecDestroy(&y_test));
