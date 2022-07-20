@@ -12,7 +12,7 @@
 # mpirun -n 6 petsc_cholesky -n_train 100000 -n_test 5000 -n_regressors 100
 #
 # Run Scripts:
-# cd && cd petsc_project/scripts && chmod +x cores_script.sh && ./cores_script.sh | tee -a cores_result.txt
+# cd && cd petsc_project/scripts && chmod +x cores_script.sh && ./cores_script.sh 1 6 1 1000 1000 100 | tee -a cores_result.txt
 #
 # Update Repository:
 # git add . && git commit -m "comment" && git push

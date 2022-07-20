@@ -74,6 +74,7 @@ int main(int argc,char **args)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&n_cores));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_train",&n_train,NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_test",&n_test,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_regressors",&n_regressors,NULL));
   //////////////////////////////////////////////////////////////////////////////
   // loadtraining and test data from .txt files
   training_input_file = fopen("data/training/training_input.txt", "r");
