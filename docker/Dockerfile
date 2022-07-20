@@ -5,13 +5,16 @@
 # Run container inside petsc_project folder:
 # sudo docker run -it --rm --user user --name petsc_container petsc_image
 #
+# Run benchmark script
+# cd && cd petsc_project && git pull --rebase && chmod +x run_benchmarks.sh && ./run_benchmarks.sh
+#
 # Compile Code:
 # cd && cd petsc_project && git pull --rebase && cd src && make petsc_cholesky && export OMPI_MCA_btl_vader_single_copy_mechanism=none
 #
 # Run Code:
-# mpirun -n 6 petsc_cholesky -n_train 100000 -n_test 5000 -n_regressors 100
+# cd && cd petsc_project/src && mpirun -n 6 petsc_cholesky -n_train 100000 -n_test 5000 -n_regressors 100
 #
-# Run Scripts:
+# Run Script:
 # cd && cd petsc_project/scripts && chmod +x cores_script.sh && ./cores_script.sh 1 6 1 1000 1000 100 | tee -a cores_result.txt
 #
 # Update Repository:
