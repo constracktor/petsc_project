@@ -7,7 +7,6 @@ STEP=$3
 N_TRAIN=$4
 N_TEST=$5
 N_REG=$6
-
 for (( i=$START; i<= $END; i=i+$STEP ))
 do
      mpirun -n $i ../src/petsc_cholesky -n_train $N_TRAIN -n_test $N_TEST -n_regressors $N_REG

@@ -16,6 +16,7 @@
 #
 # Run Script:
 # cd && cd petsc_project/scripts && chmod +x cores_script.sh && ./cores_script.sh 1 6 1 1000 1000 100 | tee -a cores_result.txt
+# cd && cd petsc_project/scripts && chmod +x data_script.sh && ./data_script.sh 1000 5000 1000 6 5000 100 | tee -a data_result.txt
 #
 # Update Repository:
 # git add . && git commit -m "comment" && git push
@@ -43,4 +44,4 @@ RUN cd petsc && ./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --wi
 RUN export PETSC_DIR=$HOME/petsc && export PETSC_ARCH=petsc-arch
 
 # remove docker error message (somehow does not work and needs to be done manually)
-RUN export OMPI_MCA_btl_vader_single_copy_mechanism=none
+# RUN export OMPI_MCA_btl_vader_single_copy_mechanism=none
