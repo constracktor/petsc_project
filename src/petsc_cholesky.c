@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <petscksp.h>
 #include <petsctime.h>
-#define type "%lf"
+#define TYPE "%lf"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -22,7 +22,7 @@ void compute_regressor_vector(PetscInt row, PetscInt n_regressors, PetscScalar *
    }
 }
 
-PetscScalar compute_covariance_fuction(PetscInt n_regressors, PetscScalar *z_i, PetscScalar *z_j, PetscScalar *hyperparameters)
+PetscScalar compute_covariance_function(PetscInt n_regressors, PetscScalar *z_i, PetscScalar *z_j, PetscScalar *hyperparameters)
 {
   // Compute the Squared Exponential Covariance Function
   // C(z_i,z_j) = vertical_lengthscale * exp(-0.5*lengthscale*(z_i-z_j)^2)
@@ -52,7 +52,7 @@ int main(int argc,char **args)
   PetscInt       indices[n_train];
   PetscReal      covariance_function, error;
   PetscScalar    z_i[n_regressors], z_j[n_regressors];
-  PetscLogDouble t_start,t_stop;
+  PetscLogDouble t_start_assemble,t_stop_assemble,t_start_solve,t_stop_solve,t_start_predict,t_stop_predict;
   Vec            y_train,alpha;         // training_output; alpha = K^-1 * y_train; L*beta=y_train
   Vec            y_test,test_prediction;// test_output
   Mat            K;                     // covariance matrix
@@ -91,14 +91,14 @@ int main(int argc,char **args)
   // load training data
   for (i = 0; i < n_train; i++)
   {
-    fscanf(training_input_file,type,&training_input[i]);
-    fscanf(training_output_file,type,&training_output[i]);
+    fscanf(training_input_file,TYPE,&training_input[i]);
+    fscanf(training_output_file,TYPE,&training_output[i]);
   }
   // load test data
   for (i = 0; i < n_test; i++)
   {
-    fscanf(test_input_file,type,&test_input[i]);
-    fscanf(test_output_file,type,&test_output[i]);
+    fscanf(test_input_file,TYPE,&test_input[i]);
+    fscanf(test_output_file,TYPE,&test_output[i]);
   }
   // close file streams
   fclose(training_input_file);
@@ -142,10 +142,9 @@ int main(int argc,char **args)
   PetscCall(MatSetFromOptions(cross_covariance));
   PetscCall(MatSetUp(cross_covariance));
   //////////////////////////////////////////////////////////////////////////////
-  // Start time measurement
-  PetscCall(PetscTime(&t_start));
-  //////////////////////////////////////////////////////////////////////////////
-  // Assemble Petsc structures
+  // ASSEMBLE
+  // Start time measurement for assembly
+  PetscCall(PetscTime(&t_start_assemble));
   for (i = 0; i < n_train; i++)
   {
     indices[i] = i;
@@ -166,7 +165,7 @@ int main(int argc,char **args)
     {
       compute_regressor_vector(j, n_regressors, training_input, z_j);
       // compute covariance function
-      covariance_function = compute_covariance_fuction(n_regressors, z_i, z_j, hyperparameters);
+      covariance_function = compute_covariance_function(n_regressors, z_i, z_j, hyperparameters);
       // add noise_variance on diagonal
       if (i==j)
       {
@@ -186,13 +185,19 @@ int main(int argc,char **args)
     {
       compute_regressor_vector(j, n_regressors, training_input, z_j);
       // compute covariance function
-      covariance_function = compute_covariance_fuction(n_regressors, z_i, z_j, hyperparameters);
+      covariance_function = compute_covariance_function(n_regressors, z_i, z_j, hyperparameters);
       // write covariance function value to covariance matrix
       PetscCall(MatSetValues(cross_covariance,1,&i,1,&j,&covariance_function,INSERT_VALUES));
     }
   }
   PetscCall(MatAssemblyBegin(cross_covariance,MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(cross_covariance,MAT_FINAL_ASSEMBLY));
+  // Stop time measurement assembly
+  PetscCall(PetscTime(&t_stop_assemble));
+  //////////////////////////////////////////////////////////////////////////////
+  // SOLVE
+  // Start time measurement
+  PetscCall(PetscTime(&t_start_solve));
   //////////////////////////////////////////////////////////////////////////////
   // Convert covariance matrix to solver format
   PetscCall(MatConvert(K,MATELEMENTAL,MAT_INPLACE_MATRIX ,&K));
@@ -204,9 +209,14 @@ int main(int argc,char **args)
   PetscCall(PCSetType(pc,PCCHOLESKY));
   PetscCall(PCFactorSetMatSolverType(pc,MATSOLVERELEMENTAL));
   PetscCall(KSPSetUp(ksp));
-  //////////////////////////////////////////////////////////////////////////////
   // Compute alpha
   PetscCall(KSPSolve(ksp,y_train,alpha));
+  // Stop time measurement
+  PetscCall(PetscTime(&t_stop_solve));
+  //////////////////////////////////////////////////////////////////////////////
+  // PREDICT
+  // Start time measurement
+  PetscCall(PetscTime(&t_start_predict));
   // Make predictions
   PetscCall(MatMult(cross_covariance,alpha,test_prediction));
   // Compute euklidian norm between vectors
@@ -214,7 +224,7 @@ int main(int argc,char **args)
   PetscCall(VecNorm(y_test,NORM_2,&error));
   //////////////////////////////////////////////////////////////////////////////
   // Stop time measurement
-  PetscCall(PetscTime(&t_stop));
+  PetscCall(PetscTime(&t_stop_predict));
   //////////////////////////////////////////////////////////////////////////////
   //print stuff
   //PetscCall(VecView(alpha,PETSC_VIEWER_STDOUT_WORLD));
@@ -226,7 +236,7 @@ int main(int argc,char **args)
   //PetscCall(PetscPrintf(PETSC_COMM_SELF,"Start: %d Stop: %d\n", rstart_train,rend_train));
   //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average Error: %lf\n", error / n_test));
   // print output information
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;%lf;%lf,%d;%d;%d;\n", n_cores, t_stop - t_start, error / n_test, n_train, n_test, n_regressors));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;%lf;%lf;%lf;%lf;%lf;%d;%d;%d;\n", n_cores, t_stop_predict - t_start_assemble, t_stop_assemble - t_start_assemble, t_stop_solve - t_start_solve, t_stop_predict -t_start_predict, error / n_test, n_train, n_test, n_regressors));
   // Free work space -> All PETSc objects should be destroyed when they are no longer needed.
   PetscCall(VecDestroy(&y_train));
   PetscCall(VecDestroy(&y_test));

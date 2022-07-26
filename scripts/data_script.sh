@@ -1,5 +1,5 @@
 #!/bin/bash
-touch data_result.txt && echo 'Cores;Time;Error;N_train;N_test;N_regressor;' >> data_result.txt
+touch data_result.txt && echo 'Cores;Total_time;Assemble_time;Solve_time;Predict_time;Error;N_train;N_test;N_regressor;' >> data_result.txt
 cd ../src
 START=$1
 END=$2
