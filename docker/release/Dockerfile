@@ -1,9 +1,9 @@
 # HOW TO
 # Build image:
-# sudo docker build . -f docker/Dockerfile -t petsc_image
+# sudo docker build . -f docker/release/Dockerfile -t petsc_release_image
 #
 # Run container inside petsc_project folder:
-# sudo docker run -it --rm --user user --name petsc_container petsc_image
+# sudo docker run -it --rm --user user --name petsc_release_container petsc_release_image
 #
 # Run benchmark script
 # cd && cd petsc_project && git pull --rebase && chmod +x run_benchmarks.sh && ./run_benchmarks.sh
@@ -38,10 +38,10 @@ RUN git clone https://github.com/constracktor/petsc_project.git
 
 # install petsc
 RUN git clone -b release https://gitlab.com/petsc/petsc.git/ && cd petsc && git pull
-# configure  and compile petsc (for relase mode use --with-debugging=0 )
-RUN cd petsc && ./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --with-clanguage=cxx --download-openmpi --download-fblaslapack --download-elemental --download-metis --download-parmetis --download-cmake && make all check
+# configure  and compile petsc in release mode
+RUN cd petsc && ./configure --with-debugging=0 --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --with-clanguage=cxx --download-openmpi --download-fblaslapack --download-elemental --download-metis --download-parmetis --download-cmake && make all check
 # export petsc
 RUN export PETSC_DIR=$HOME/petsc && export PETSC_ARCH=petsc-arch
 
-# remove docker error message (somehow does not work and needs to be done manually)
+# remove docker error message (somehow does not work and needs to be done manually - see compile code)
 # RUN export OMPI_MCA_btl_vader_single_copy_mechanism=none
