@@ -43,7 +43,7 @@ int main(int argc,char **args)
   // initalize hyperparameters to empirical moments of the data
   hyperparameters[0] = 1.0;   // lengthscale = variance of training_output
   hyperparameters[1] = 1.0;   // vertical_lengthscale = standard deviation of training_input
-  hyperparameters[2] = 0.001; // noise_variance = small value
+  hyperparameters[2] = 0.1; // noise_variance = small value
   // Petsc structures
   PetscInt       n_cores;
   PetscInt       i,j;
