@@ -30,11 +30,11 @@ Run Code:
 
 Build image inside petsc_project folder:
 
-`sudo docker build . -f docker/build/Dockerfile -t petsc_build_image`
+`sudo docker build . -f docker/debug/Dockerfile -t petsc_debug_image`
 
 Run container inside petsc_project folder:
 
-`sudo docker run -it --rm --user user --name petsc_build_container petsc_build_image`
+`sudo docker run -it --rm --user user --name petsc_debug_container petsc_debug_image`
 
 ### Inside Debug Container
 
