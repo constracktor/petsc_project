@@ -1,6 +1,6 @@
 #!/bin/bash
 # Compile Code
-cd && cd petsc_project/src && make petsc_cholesky && export OMPI_MCA_btl_vader_single_copy_mechanism=none
+cd && cd petsc_project/src && make petsc_cholesky DEBUG=0 && export OMPI_MCA_btl_vader_single_copy_mechanism=none
 # Run cores_script
 START=1
 END=6
