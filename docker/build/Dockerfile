@@ -26,7 +26,7 @@ FROM ubuntu:22.04
 
 SHELL ["/bin/bash","-c"]
 # install essentials
-RUN apt-get update -y && apt-get install -y vim make git python3 gcc g++ gfortran openmpi-bin
+RUN apt-get update -y && apt-get install -y vim make cmake git python3 gcc g++ gfortran openmpi-bin
 
 # add user
 RUN useradd -ms /bin/bash user

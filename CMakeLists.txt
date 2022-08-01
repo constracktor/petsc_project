@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.20.3)
-
+-include /home/user/petsc/petscdir.mk
 project(petsc_project)
+
+list (APPEND CMAKE_MODULE_PATH "${PETSC_DIR}/cmake-modules")
+find_package(PETSc REQUIRED)
 
 # PkgConfig
 find_package(PkgConfig)
