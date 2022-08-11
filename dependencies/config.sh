@@ -4,7 +4,7 @@ export SOURCE_ROOT=${PETSC_ROOT}/src
 ################################################################################
 # Package Configuration
 ################################################################################
-# GCC (for gfortran)
+# GCC
 export GCC_VERSION=10.3.0
 
 # Python

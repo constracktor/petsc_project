@@ -1,7 +1,7 @@
 #!/bin/bash
 # Set variables
 export OMPI_MCA_btl_vader_single_copy_mechanism=none
-export PETSC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/dependencies/petsc"
+export PETSC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/dependencies/src/petsc"
 export PETSC_ARCH=arch-linux-cxx-opt
 export RUN_COMMAND="${PETSC_DIR}/lib/petsc/bin/petscmpiexec"
 # Compile Code

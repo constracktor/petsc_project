@@ -17,5 +17,5 @@ WORKDIR /home/user/
 # clone repository
 RUN git clone https://github.com/constracktor/petsc_project.git
 
-# install dependencies
-RUN cd && cd petsc_project/dependencies && ./build-all.sh Debug
+# install dependencies manually with
+# cd && cd petsc_project/dependencies && git pull --rebase && ./build-all.sh Release

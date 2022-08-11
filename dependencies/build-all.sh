@@ -17,9 +17,11 @@ EOF
 ################################################################################
 # Command-line options
 ################################################################################
-if [[ "$1" == "Release" || "$1" == "Debug" ]]; then
+if [[ "$1" == "Release" || "$1" == "Debug" ]]
+then
     export BUILD_TYPE=$1
     echo "Build Type: ${BUILD_TYPE}"
+
 else
     echo 'Build type must be provided and has to be "Release" or "Debug"' >&2
     print_usage_abort
@@ -48,10 +50,11 @@ mkdir -p ${SOURCE_ROOT} ${INSTALL_ROOT}
 # Build tools
 ################################################################################
 echo "Building GCC"
-./build-gcc.sh
+#./build-gcc.sh
 
 echo "Building Python"
 ./build-python.sh
+export PYTHONPATH="${INSTALL_ROOT}/python/bin/python3"
 
 ################################################################################
 # PETSc

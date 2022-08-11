@@ -1,18 +1,5 @@
 #!/bin/bash
-# Get from sourceforge
-#DIR_SRC="python"
-
-#DOWNLOAD_URL="https://www.python.org/ftp/python/3.10.6/Python-3.10.6.tar.xz"
-#mkdir -p ${DIR_SRC}
-#cd ${DIR_SRC}
-
-#wget -O- ${DOWNLOAD_URL} | tar xJ --strip-components=1
-
-#mkdir build
-#./configure --prefix=$(pwd)/build
-#make && make install
-
-: ${SOURCE_ROOT:?} ${INSTALL_ROOT:?} ${GCC_VERSION:?}
+: ${SOURCE_ROOT:?} ${INSTALL_ROOT:?} ${PYTHON_VERSION:?}
 
 DIR_SRC=${SOURCE_ROOT}/python
 DIR_BUILD=${INSTALL_ROOT}/python/build

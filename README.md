@@ -5,6 +5,7 @@ description tbd.
 sudo docker build . -f docker/Dockerfile -t petsc_base_image
 sudo docker run -it --rm --user user petsc_base_image
 
+cd && cd petsc_project/dependencies && git pull --rebase && ./build-all.sh Release
 
 ## Release
 
