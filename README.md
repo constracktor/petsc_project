@@ -2,6 +2,10 @@
 
 description tbd.
 
+sudo docker build . -f docker/Dockerfile -t petsc_base_image
+sudo docker run -it --rm --user user petsc_base_image
+
+
 ## Release
 
 ### Release Docker Container
@@ -58,7 +62,7 @@ Training Size Loop:
 
 Benchmark Script:
 
-`cd && cd petsc_project && git pull --rebase && chmod +x run_benchmarks.sh && ./run_benchmarks.sh`
+`cd && cd petsc_project && git pull --rebase && ./run_benchmarks.sh`
 
 
 ## Git Commands

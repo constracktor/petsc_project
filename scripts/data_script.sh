@@ -9,5 +9,5 @@ N_TEST=$5
 N_REG=$6
 for (( i=$START; i<= $END; i=i+$STEP ))
 do
-     mpirun -n $N_CORES ../src/petsc_cholesky -n_train $i -n_test $N_TEST -n_regressors $N_REG
+     ${RUN_COMMAND} -n $N_CORES ../src/petsc_cholesky -n_train $i -n_test $N_TEST -n_regressors $N_REG
 done
