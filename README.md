@@ -54,7 +54,7 @@ Compile Code:
 
 Compile Code:
 
-`cd && cd petsc_project && git pull --rebase && cd src && make petsc_cholesky DEBUG=1 && export OMPI_MCA_btl_vader_single_copy_mechanism=none`
+`cd && cd petsc_project && git pull --rebase && cd src && make petsc_cholesky DEBUG=1`
 
 
 ## Run Code Manually

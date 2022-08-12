@@ -13,10 +13,10 @@ else
     export PETSC_ARCH=arch-linux-cxx-debug
 fi
 # Compile Code
-cd && cd petsc_project/src && make petsc_cholesky DEBUG=${DEBUGGING}
+cd src && make petsc_cholesky DEBUG=${DEBUGGING}
 # Run both scripts
-cd && cd petsc_project/benchmark_scripts && rm cores_result.txt && rm data_result.txt
-LOOP=1
+cd ../benchmark_scripts && rm cores_result.txt && rm data_result.txt
+LOOP=5
 # Run cores_script
 START=1
 END=6
@@ -24,7 +24,7 @@ STEP=1
 N_TRAIN=1000
 N_TEST=1000
 N_REG=100
-cd && cd petsc_project/benchmark_scripts && ./cores_script.sh $START $END $STEP $N_TRAIN $N_TEST $N_REG $LOOP| tee -a cores_result.txt
+./cores_script.sh $START $END $STEP $N_TRAIN $N_TEST $N_REG $LOOP| tee -a cores_result.txt
 # Run data_script
 START=1000
 END=5000
@@ -32,4 +32,4 @@ STEP=1000
 N_CORES=6
 N_TEST=1000
 N_REG=100
-cd && cd petsc_project/benchmark_scripts && ./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP| tee -a data_result.txt
+./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP| tee -a data_result.txt
