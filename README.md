@@ -54,7 +54,7 @@ Compile Code:
 
 Compile Code:
 
-`cd && cd petsc_project && git pull --rebase && cd src && make petsc_cholesky DEBUG=1`
+`cd && cd petsc_project && git pull --rebase && cd src && make petsc_cholesky DEBUG=1 && export OMPI_MCA_btl_vader_single_copy_mechanism=none`
 
 
 ## Run Code Manually
@@ -68,11 +68,11 @@ Run Code:
 
 MPI Node Loop:
 
-`cd && cd petsc_project/scripts && ./cores_script.sh 1 6 1 1000 1000 100 5 | tee -a cores_result.txt`
+`cd && cd petsc_project/scripts && ./cores_script.sh 1 6 1 1000 1000 100 5 cores_result.txt | tee -a cores_result.txt`
 
 Training Size Loop:
 
-`cd && cd petsc_project/scripts && ./data_script.sh 1000 5000 1000 6 5000 100 5 | tee -a data_result.txt`
+`cd && cd petsc_project/scripts && ./data_script.sh 1000 5000 1000 6 5000 100 5 cores_result.txt | tee -a data_result.txt`
 
 Benchmark Script:
 

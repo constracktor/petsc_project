@@ -6,9 +6,9 @@ N_CORES=$4
 N_TEST=$5
 N_REG=$6
 N_LOOP=$7
-OUTPUT_FILE="data_result.txt"
+OUTPUT_FILE=$8
 
-touch $OUTPUT_FILE && echo 'Cores;N_train;N_test;N_regressor;Total_time;Assemble_time;Solve_time;Predict_time;Error' >> $OUTPUT_FILE
+touch $OUTPUT_FILE && echo "Cores;N_train;N_test;N_regressor;Total_time;Assemble_time;Solve_time;Predict_time;Error;${N_LOOP}" >> $OUTPUT_FILE
 
 cd ../src
 for (( i=$START; i<= $END; i=i+$STEP ))
