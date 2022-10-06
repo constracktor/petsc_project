@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 SHELL ["/bin/bash","-c"]
 
 # install essentials
-RUN apt-get update -y && apt-get install -y git build-essential wget xz-utils bzip2 libz-dev gfortran
+RUN apt-get update -y && apt-get install -y git build-essential wget xz-utils bzip2 libz-dev gfortran libboost-all-dev
 
 # install dev tools (not necessary to run benchmark script)
 # RUN apt-get install -y vim
