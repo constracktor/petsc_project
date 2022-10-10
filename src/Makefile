@@ -13,3 +13,7 @@ endif
 petsc_cholesky: petsc_cholesky.o chkopts
 	-${CLINKER} -O3 -o petsc_cholesky petsc_cholesky.o ${PETSC_LIB} $(CFLAGS)
 	${RM} petsc_cholesky.o
+
+petsc_blas: petsc_blas.o chkopts
+	-${CLINKER} -O3 -o petsc_blas petsc_blas.o ${PETSC_LIB} $(CFLAGS)
+	${RM} petsc_blas.o

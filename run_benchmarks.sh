@@ -13,9 +13,17 @@ else
     export PETSC_ARCH=arch-linux-cxx-debug
 fi
 # Compile Code
-cd src && make petsc_cholesky DEBUG=${DEBUGGING}
+cd src
+make petsc_blas DEBUG=${DEBUGGING}
+make petsc_cholesky DEBUG=${DEBUGGING}
 # Run both scripts
 cd ../benchmark_scripts
+# Run benchmark
+OUTPUT_FILE_BLAS="blas_petsc.txt"
+rm $OUTPUT_FILE_BLAS
+touch $OUTPUT_FILE_BLAS
+${RUN_COMMAND} -n 1 ../src/petsc_blas | tee $OUTPUT_FILE_BLAS
+# Run scripts
 OUTPUT_FILE_CORES="cores_petsc.txt"
 OUTPUT_FILE_DATA="data_petsc.txt"
 rm $OUTPUT_FILE_CORES
@@ -36,7 +44,7 @@ STEP=100
 N_CORES=1
 N_TEST=1000
 N_REG=100
-./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
+#./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
 # Run data_script up to 10 000
 START=1000
 END=10000
@@ -44,7 +52,7 @@ STEP=1000
 N_CORES=1
 N_TEST=1000
 N_REG=100
-./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
+#./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
 # Run data_script from 10 000 to 100 000
 START=10000
 END=100000
@@ -53,6 +61,3 @@ N_CORES=128
 N_TEST=5000
 N_REG=100
 #./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
-
-# 128;50000;5000;100;207.993578;13.849659;194.126765;0.017153;0.004673; -> 4 min
-# 128;100000;5000;100;1409.708050;54.244647;1355.396655;0.066746;0.004567; -> 23 min
