@@ -11,7 +11,7 @@ int main(int argc,char **args)
   // Petsc structures
   PetscInt       n_loop = 500;
   PetscInt       exp_start = 1;
-  PetscInt       exp_end = 2;
+  PetscInt       exp_end = 3;
   PetscInt       early_stop = 15 * pow(10, exp_end - 1);
   PetscInt       n_vector[9 * (exp_end - exp_start) + 1];
   PetscInt       n_dim;
