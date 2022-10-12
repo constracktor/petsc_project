@@ -9,13 +9,13 @@
 int main(int argc,char **args)
 {
   // Petsc structures
-  PetscInt       n_loop = 5;
+  PetscInt       n_loop = 500;
   PetscInt       exp_start = 1;
-  PetscInt       exp_end = 4;
-  PetscInt       early_stop = 5 * pow(10, exp_end - 1);
+  PetscInt       exp_end = 2;
+  PetscInt       early_stop = 15 * pow(10, exp_end - 1);
   PetscInt       n_vector[9 * (exp_end - exp_start) + 1];
   PetscInt       n_dim;
-  PetscInt       n_cores;
+  PetscInt       n_cores,warmup;
   PetscInt       i,j,k,loop;
   PetscLogDouble t_start_potrf, t_stop_potrf, t_start_trsm, t_stop_trsm, t_start_gemm, t_stop_gemm;
   PetscLogDouble t_total_potrf = 0.0, t_total_trsm = 0.0, t_total_gemm = 0.0;
@@ -37,7 +37,12 @@ int main(int argc,char **args)
   n_vector[9 * (exp_end - exp_start)] = pow(10, exp_end);
   // print header
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"N;POTRF;TRSM;GEMM;loop;%d;\n", n_loop));
-  //loop
+  // warm up
+  for (k = 0; k < 100000; k++)
+  {
+    warmup = warmup + 1;
+  }
+  // loop
   for (k = 0; k < 9 * (exp_end - exp_start) + 1; k++)
   {
     n_dim = n_vector[k];
