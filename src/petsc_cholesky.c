@@ -226,18 +226,8 @@ int main(int argc,char **args)
   // Stop time measurement
   PetscCall(PetscTime(&t_stop_predict));
   //////////////////////////////////////////////////////////////////////////////
-  //print stuff
-  //PetscCall(VecView(alpha,PETSC_VIEWER_STDOUT_WORLD));
-  //PetscCall(VecView(y_test,PETSC_VIEWER_STDOUT_WORLD));
-  //PetscCall(VecView(test_prediction,PETSC_VIEWER_STDOUT_WORLD));
-  //PetscCall(KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD));
-  //PetscCall(MatView(K,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
-  //PetscCall(MatView(cross_covariance,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
-  //PetscCall(PetscPrintf(PETSC_COMM_SELF,"Start: %d Stop: %d\n", rstart_train,rend_train));
-  //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"Average Error: %lf\n", error / n_test));
   // print output information
   PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;%d;%d;%d;%lf;%lf;%lf;%lf;%lf;\n", n_cores, n_train, n_test, n_regressors, t_stop_predict - t_start_assemble, t_stop_assemble - t_start_assemble, t_stop_solve - t_start_solve, t_stop_predict - t_start_predict, error / n_test));
-
   // Free work space -> All PETSc objects should be destroyed when they are no longer needed.
   PetscCall(VecDestroy(&y_train));
   PetscCall(VecDestroy(&y_test));

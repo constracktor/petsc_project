@@ -129,7 +129,6 @@ int main(int argc,char **args)
       PetscCall(MatDestroy(&B));
       PetscCall(MatDestroy(&C));
       PetscCall(KSPDestroy(&ksp));
-      //PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;%lf;%lf;%lf;\n", n_dim, t_total_potrf, t_total_trsm / n_loop, t_total_gemm / n_loop));
     }
     // print output information
     PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;%lf;%lf;%lf;\n", n_dim, t_total_potrf / n_loop, t_total_trsm / n_loop, t_total_gemm / n_loop));

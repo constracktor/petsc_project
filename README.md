@@ -1,6 +1,9 @@
 # PETSc Project
 
-description tbd.
+Repository that contains the PETSc implementation of the non-linear system
+identification with Gaussian processes minimum working example used for
+the research project:
+"A comparison of PETSc and HPX for a Scientific Computation Problem"
 
 ## Docker Containers
 
@@ -79,7 +82,7 @@ Benchmark Script:
 `cd && cd petsc_project && git pull --rebase && ./run_benchmarks.sh Release`
 
 
-## Git Commands
+## Git Commands for Developing
 
 `git add . && git commit -m "comment" && git push`
 

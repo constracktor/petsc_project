@@ -22,7 +22,7 @@ cd ../benchmark_scripts
 OUTPUT_FILE_BLAS="blas_petsc.txt"
 rm $OUTPUT_FILE_BLAS
 touch $OUTPUT_FILE_BLAS
-${RUN_COMMAND} -n 1 ../src/petsc_blas | tee $OUTPUT_FILE_BLAS
+#${RUN_COMMAND} -n 1 ../src/petsc_blas | tee $OUTPUT_FILE_BLAS
 # Run scripts
 OUTPUT_FILE_CORES="cores_petsc.txt"
 OUTPUT_FILE_DATA="data_petsc.txt"
@@ -36,7 +36,7 @@ STEP=2
 N_TRAIN=20000
 N_TEST=5000
 N_REG=100
-#./cores_script.sh $START $END $STEP $N_TRAIN $N_TEST $N_REG $LOOP $OUTPUT_FILE_CORES| tee -a $OUTPUT_FILE_CORES
+./cores_script.sh $START $END $STEP $N_TRAIN $N_TEST $N_REG $LOOP $OUTPUT_FILE_CORES| tee -a $OUTPUT_FILE_CORES
 # Run data_script up to 1 000
 START=100
 END=900
