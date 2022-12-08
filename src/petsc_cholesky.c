@@ -6,7 +6,10 @@
 #undef __FUNCT__
 #define __FUNCT__ "main"
 
-void compute_regressor_vector(PetscInt row, PetscInt n_regressors, PetscScalar *training_input, PetscScalar *u_row )
+void compute_regressor_vector(PetscInt row,
+                              PetscInt n_regressors,
+                              PetscScalar *training_input,
+                              PetscScalar *u_row )
 {
    for (PetscInt i = 0; i < n_regressors; i++)
    {
@@ -22,7 +25,10 @@ void compute_regressor_vector(PetscInt row, PetscInt n_regressors, PetscScalar *
    }
 }
 
-PetscScalar compute_covariance_function(PetscInt n_regressors, PetscScalar *z_i, PetscScalar *z_j, PetscScalar *hyperparameters)
+PetscScalar compute_covariance_function(PetscInt n_regressors,
+                                        PetscScalar *z_i,
+                                        PetscScalar *z_j,
+                                        PetscScalar *hyperparameters)
 {
   // Compute the Squared Exponential Covariance Function
   // C(z_i,z_j) = vertical_lengthscale * exp(-0.5*lengthscale*(z_i-z_j)^2)
@@ -45,7 +51,7 @@ int main(int argc,char **args)
   hyperparameters[1] = 1.0;   // vertical_lengthscale = standard deviation of training_input
   hyperparameters[2] = 0.1; // noise_variance = small value
   // Petsc structures
-  PetscInt       n_cores;
+  PetscInt       n_cores,scanned_elements;
   PetscInt       i,j;
   PetscInt       rstart_train,rend_train,n_train_local;
   PetscInt       rstart_test,rend_test,n_test_local;
@@ -85,20 +91,32 @@ int main(int argc,char **args)
   test_output_file = fopen("data/test/test_output_3.txt", "r");
   if (training_input_file == NULL || training_output_file == NULL || test_input_file == NULL || test_output_file == NULL)
   {
-    printf("return 1\n");
+    printf("Error in opening data files!\n");
     return 1;
   }
   // load training data
+  scanned_elements = 0;
   for (i = 0; i < n_train; i++)
   {
-    fscanf(training_input_file,TYPE,&training_input[i]);
-    fscanf(training_output_file,TYPE,&training_output[i]);
+    scanned_elements += fscanf(training_input_file,TYPE,&training_input[i]);
+    scanned_elements += fscanf(training_output_file,TYPE,&training_output[i]);
+  }
+  if (scanned_elements != 2 * n_train)
+  {
+    printf("Error in reading training data!\n");
+    return 1;
   }
   // load test data
+  scanned_elements = 0;
   for (i = 0; i < n_test; i++)
   {
-    fscanf(test_input_file,TYPE,&test_input[i]);
-    fscanf(test_output_file,TYPE,&test_output[i]);
+    scanned_elements += fscanf(test_input_file,TYPE,&test_input[i]);
+    scanned_elements += fscanf(test_output_file,TYPE,&test_output[i]);
+  }
+  if (scanned_elements != 2 * n_test)
+  {
+    printf("Error in reading test data!\n");
+    return 1;
   }
   // close file streams
   fclose(training_input_file);
@@ -157,7 +175,7 @@ int main(int argc,char **args)
   PetscCall(VecSetValues(y_test,n_test,indices,test_output,INSERT_VALUES));
   PetscCall(VecAssemblyBegin(y_test));
   PetscCall(VecAssemblyEnd(y_test));
-  // Assemble covariance matrix according to chunks of contiguous rows
+  // Assemble covariance matrix according to chunks of contiguous row
   for (i = rstart_train; i < rend_train; i++)
   {
     compute_regressor_vector(i, n_regressors, training_input, z_i);
@@ -219,6 +237,11 @@ int main(int argc,char **args)
   PetscCall(PetscTime(&t_start_predict));
   // Make predictions
   PetscCall(MatMult(cross_covariance,alpha,test_prediction));
+
+
+  PetscCall(VecView(y_test, PETSC_VIEWER_STDOUT_WORLD));
+
+
   // Compute euklidian norm between vectors
   PetscCall(VecAXPY(y_test,-1.0,test_prediction));
   PetscCall(VecNorm(y_test,NORM_2,&error));
@@ -227,7 +250,17 @@ int main(int argc,char **args)
   PetscCall(PetscTime(&t_stop_predict));
   //////////////////////////////////////////////////////////////////////////////
   // print output information
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;%d;%d;%d;%lf;%lf;%lf;%lf;%lf;\n", n_cores, n_train, n_test, n_regressors, t_stop_predict - t_start_assemble, t_stop_assemble - t_start_assemble, t_stop_solve - t_start_solve, t_stop_predict - t_start_predict, error / n_test));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;%d;%d;%d;%lf;%lf;%lf;%lf;%lf;\n",
+                        n_cores,
+                        n_train,
+                        n_test,
+                        n_regressors,
+                        t_stop_predict - t_start_assemble,
+                        t_stop_assemble - t_start_assemble,
+                        t_stop_solve - t_start_solve,
+                        t_stop_predict - t_start_predict,
+                        error));
+                        //error / n_test));
   // Free work space -> All PETSc objects should be destroyed when they are no longer needed.
   PetscCall(VecDestroy(&y_train));
   PetscCall(VecDestroy(&y_test));

@@ -22,35 +22,28 @@ cd ../benchmark_scripts
 OUTPUT_FILE_BLAS="blas_petsc.txt"
 rm $OUTPUT_FILE_BLAS
 touch $OUTPUT_FILE_BLAS
+# Run blas benchmark
 #${RUN_COMMAND} -n 1 ../src/petsc_blas | tee $OUTPUT_FILE_BLAS
 # Run scripts
 OUTPUT_FILE_CORES="cores_petsc.txt"
 OUTPUT_FILE_DATA="data_petsc.txt"
 rm $OUTPUT_FILE_CORES
 rm $OUTPUT_FILE_DATA
-LOOP=5
-# Run cores_script
+LOOP=1
+# Run cores_script from 1 to 128 cores
 START=1
 END=128
 STEP=2
 N_TRAIN=20000
 N_TEST=5000
 N_REG=100
-./cores_script.sh $START $END $STEP $N_TRAIN $N_TEST $N_REG $LOOP $OUTPUT_FILE_CORES| tee -a $OUTPUT_FILE_CORES
-# Run data_script up to 1 000
-START=100
-END=900
-STEP=100
-N_CORES=1
-N_TEST=1000
-N_REG=100
-#./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
-# Run data_script up to 10 000
+#./cores_script.sh $START $END $STEP $N_TRAIN $N_TEST $N_REG $LOOP $OUTPUT_FILE_CORES| tee -a $OUTPUT_FILE_CORES
+# Run data_script from 1 000 to 9 000
 START=1000
-END=10000
+END=9000
 STEP=1000
-N_CORES=1
-N_TEST=1000
+N_CORES=128
+N_TEST=5000
 N_REG=100
 #./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
 # Run data_script from 10 000 to 100 000
@@ -61,3 +54,11 @@ N_CORES=128
 N_TEST=5000
 N_REG=100
 #./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
+# Run data_script for testing
+START=1000
+END=1000
+STEP=1000
+N_CORES=8
+N_TEST=5000
+N_REG=100
+./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
