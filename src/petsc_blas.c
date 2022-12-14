@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscInt       n_loop = 500;
   PetscInt       exp_start = 1;
   PetscInt       exp_end = 3;
-  PetscInt       early_stop = 15 * pow(10, exp_end - 1);
+  PetscInt       early_stop = 10 * pow(10, exp_end - 1);
   PetscInt       n_vector[9 * (exp_end - exp_start) + 1];
   PetscInt       n_dim;
   PetscInt       n_cores,warmup;
@@ -131,7 +131,11 @@ int main(int argc,char **args)
       PetscCall(KSPDestroy(&ksp));
     }
     // print output information
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;%lf;%lf;%lf;\n", n_dim, t_total_potrf / n_loop, t_total_trsm / n_loop, t_total_gemm / n_loop));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD,"%d;%lf;%lf;%lf;\n",
+                          n_dim,
+                          t_total_potrf / n_loop,
+                          t_total_trsm / n_loop, 
+                          t_total_gemm / n_loop));
   }
   // finalize Petsc
   PetscCall(PetscFinalize());

@@ -55,7 +55,7 @@ int main(int argc,char **args)
   PetscInt       i,j;
   PetscInt       rstart_train,rend_train,n_train_local;
   PetscInt       rstart_test,rend_test,n_test_local;
-  PetscInt       indices[n_train];
+  PetscInt       indices_train[n_train],indices_test[n_test];;
   PetscReal      covariance_function, error;
   PetscScalar    z_i[n_regressors], z_j[n_regressors];
   PetscLogDouble t_start_assemble,t_stop_assemble,t_start_solve,t_stop_solve,t_start_predict,t_stop_predict;
@@ -165,14 +165,18 @@ int main(int argc,char **args)
   PetscCall(PetscTime(&t_start_assemble));
   for (i = 0; i < n_train; i++)
   {
-    indices[i] = i;
+    indices_train[i] = i;
+  }
+  for (i = 0; i < n_test; i++)
+  {
+    indices_test[i] = i;
   }
   // Assemble training output vector
-  PetscCall(VecSetValues(y_train,n_train,indices,training_output,INSERT_VALUES));
+  PetscCall(VecSetValues(y_train,n_train,indices_train,training_output,INSERT_VALUES));
   PetscCall(VecAssemblyBegin(y_train));
   PetscCall(VecAssemblyEnd(y_train));
   // Assemble test output vector
-  PetscCall(VecSetValues(y_test,n_test,indices,test_output,INSERT_VALUES));
+  PetscCall(VecSetValues(y_test,n_test,indices_test,test_output,INSERT_VALUES));
   PetscCall(VecAssemblyBegin(y_test));
   PetscCall(VecAssemblyEnd(y_test));
   // Assemble covariance matrix according to chunks of contiguous row
@@ -237,11 +241,6 @@ int main(int argc,char **args)
   PetscCall(PetscTime(&t_start_predict));
   // Make predictions
   PetscCall(MatMult(cross_covariance,alpha,test_prediction));
-
-
-  PetscCall(VecView(y_test, PETSC_VIEWER_STDOUT_WORLD));
-
-
   // Compute euklidian norm between vectors
   PetscCall(VecAXPY(y_test,-1.0,test_prediction));
   PetscCall(VecNorm(y_test,NORM_2,&error));
@@ -259,8 +258,7 @@ int main(int argc,char **args)
                         t_stop_assemble - t_start_assemble,
                         t_stop_solve - t_start_solve,
                         t_stop_predict - t_start_predict,
-                        error));
-                        //error / n_test));
+                        error / n_test));
   // Free work space -> All PETSc objects should be destroyed when they are no longer needed.
   PetscCall(VecDestroy(&y_train));
   PetscCall(VecDestroy(&y_test));

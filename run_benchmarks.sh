@@ -29,10 +29,10 @@ OUTPUT_FILE_CORES="cores_petsc.txt"
 OUTPUT_FILE_DATA="data_petsc.txt"
 rm $OUTPUT_FILE_CORES
 rm $OUTPUT_FILE_DATA
-LOOP=1
-# Run cores_script from 1 to 128 cores
+LOOP=5
+# Run cores_script from 1 to 256 cores
 START=1
-END=128
+END=256
 STEP=2
 N_TRAIN=20000
 N_TEST=5000
@@ -55,8 +55,8 @@ N_TEST=5000
 N_REG=100
 #./data_script.sh $START $END $STEP $N_CORES $N_TEST $N_REG $LOOP $OUTPUT_FILE_DATA| tee -a $OUTPUT_FILE_DATA
 # Run data_script for testing
-START=1000
-END=1000
+START=10000
+END=10000
 STEP=1000
 N_CORES=8
 N_TEST=5000
