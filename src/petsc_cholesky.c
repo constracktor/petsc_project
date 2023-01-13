@@ -6,6 +6,7 @@
 #undef __FUNCT__
 #define __FUNCT__ "main"
 
+// compute feature vector z_i
 void compute_regressor_vector(PetscInt row,
                               PetscInt n_regressors,
                               PetscScalar *training_input,
@@ -25,12 +26,12 @@ void compute_regressor_vector(PetscInt row,
    }
 }
 
+// compute the squared exponential kernel of two feature vectors
 PetscScalar compute_covariance_function(PetscInt n_regressors,
                                         PetscScalar *z_i,
                                         PetscScalar *z_j,
                                         PetscScalar *hyperparameters)
 {
-  // Compute the Squared Exponential Covariance Function
   // C(z_i,z_j) = vertical_lengthscale * exp(-0.5*lengthscale*(z_i-z_j)^2)
   PetscScalar distance = 0.0;
   for (PetscInt i = 0; i < n_regressors; i++)
@@ -41,15 +42,7 @@ PetscScalar compute_covariance_function(PetscInt n_regressors,
 }
 
 int main(int argc,char **args)
-{ // GP parameters
-  PetscInt       n_train = 100 * 1000;  //max 100*1000
-  PetscInt       n_test = 5 * 1000;     //max 5*1000
-  PetscInt       n_regressors = 100;
-  PetscScalar    hyperparameters[3];
-  // initalize hyperparameters to empirical moments of the data
-  hyperparameters[0] = 1.0;   // lengthscale = variance of training_output
-  hyperparameters[1] = 1.0;   // vertical_lengthscale = standard deviation of training_input
-  hyperparameters[2] = 0.1; // noise_variance = small value
+{
   // Petsc structures
   PetscInt       n_cores,scanned_elements;
   PetscInt       i,j;
@@ -60,10 +53,10 @@ int main(int argc,char **args)
   PetscScalar    z_i[n_regressors], z_j[n_regressors];
   PetscLogDouble t_start_assemble,t_stop_assemble,t_start_solve,t_stop_solve,t_start_predict,t_stop_predict;
   Vec            y_train,alpha;         // training_output; alpha = K^-1 * y_train; L*beta=y_train
-  Vec            y_test,test_prediction;// test_output
+  Vec            y_test,test_prediction;// test_output; test_prediction
   Mat            K;                     // covariance matrix
-  Mat            L;                     // Cholesky decomposition
-  Mat            cross_covariance;      // cross covariance of all test samples
+  Mat            L;                     // factorized matrix
+  Mat            cross_covariance;      // cross-covariance matrix
   KSP            ksp;          // linear solver context
   PC             pc;           // preconditioner context
   // data holders for assembly
@@ -76,19 +69,24 @@ int main(int argc,char **args)
   FILE    *training_output_file;
   FILE    *test_input_file;
   FILE    *test_output_file;
-  // Petsc initialization
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,PETSC_NULL));
-  // Get parameters
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&n_cores));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_train",&n_train,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_test",&n_test,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_regressors",&n_regressors,NULL));
   //////////////////////////////////////////////////////////////////////////////
-  // loadtraining and test data from .txt files
+  // Get and set parameters
+  // determine problem size
+  PetscInt       n_train = 1 * 1000;  //max 100*1000
+  PetscInt       n_test = 1 * 1000;   //max 5*1000
+  // GP parameters
+  PetscInt       n_regressors = 100;
+  PetscScalar    hyperparameters[3];
+  // initalize hyperparameters to empirical moments of the data
+  hyperparameters[0] = 1.0;   // lengthscale = variance of training_output
+  hyperparameters[1] = 1.0;   // vertical_lengthscale = standard deviation of training_input
+  hyperparameters[2] = 0.1; // noise_variance = small value
+  //////////////////////////////////////////////////////////////////////////////
+  // Load data
   training_input_file = fopen("data/training/training_input.txt", "r");
   training_output_file = fopen("data/training/training_output.txt", "r");
-  test_input_file = fopen("data/test/test_input_3.txt", "r");
-  test_output_file = fopen("data/test/test_output_3.txt", "r");
+  test_input_file = fopen("data/test/test_input.txt", "r");
+  test_output_file = fopen("data/test/test_output.txt", "r");
   if (training_input_file == NULL || training_output_file == NULL || test_input_file == NULL || test_output_file == NULL)
   {
     printf("Error in opening data files!\n");
@@ -124,6 +122,14 @@ int main(int argc,char **args)
   fclose(test_input_file);
   fclose(test_output_file);
   //////////////////////////////////////////////////////////////////////////////
+  // PETSc
+  // Petsc initialization
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,PETSC_NULL));
+  // Get parameters
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&n_cores));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_train",&n_train,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_test",&n_test,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_regressors",&n_regressors,NULL));
   // Create Petsc structures
   // Create vector y_train
   PetscCall(VecCreate(PETSC_COMM_WORLD,&y_train));
@@ -142,25 +148,22 @@ int main(int argc,char **args)
   PetscCall(VecGetLocalSize(y_train,&n_train_local));
   PetscCall(VecGetOwnershipRange(y_test,&rstart_test,&rend_test));
   PetscCall(VecGetLocalSize(y_test,&n_test_local));
-
-  // Create matrix.  When using MatCreate(), the matrix format can
-  // be specified at runtime.
   // Create covariance matrix
   PetscCall(MatCreate(PETSC_COMM_WORLD,&K));
   PetscCall(MatSetType(K, MATMPIDENSE));
   PetscCall(MatSetSizes(K,n_train_local,PETSC_DECIDE,n_train,n_train));
   PetscCall(MatSetFromOptions(K));
   PetscCall(MatSetUp(K));
-  // Create Cholesky matrix
+  // Create factorized matrix
   PetscCall(MatDuplicate(K,MAT_DO_NOT_COPY_VALUES,&L));
-  // Create cross covariance matrix
+  // Create cross-covariance matrix
   PetscCall(MatCreate(PETSC_COMM_WORLD,&cross_covariance));
   PetscCall(MatSetType(cross_covariance, MATMPIDENSE));
   PetscCall(MatSetSizes(cross_covariance,n_test_local,PETSC_DECIDE,n_test,n_train));
   PetscCall(MatSetFromOptions(cross_covariance));
   PetscCall(MatSetUp(cross_covariance));
   //////////////////////////////////////////////////////////////////////////////
-  // ASSEMBLE
+  // PART 1: ASSEMBLE
   // Start time measurement for assembly
   PetscCall(PetscTime(&t_start_assemble));
   for (i = 0; i < n_train; i++)
@@ -217,7 +220,7 @@ int main(int argc,char **args)
   // Stop time measurement assembly
   PetscCall(PetscTime(&t_stop_assemble));
   //////////////////////////////////////////////////////////////////////////////
-  // SOLVE
+  // PART 2: CHOLESKY SOLVE
   // Start time measurement
   PetscCall(PetscTime(&t_start_solve));
   //////////////////////////////////////////////////////////////////////////////
@@ -236,12 +239,12 @@ int main(int argc,char **args)
   // Stop time measurement
   PetscCall(PetscTime(&t_stop_solve));
   //////////////////////////////////////////////////////////////////////////////
-  // PREDICT
+  // PART 3: PREDICTION
   // Start time measurement
   PetscCall(PetscTime(&t_start_predict));
   // Make predictions
   PetscCall(MatMult(cross_covariance,alpha,test_prediction));
-  // Compute euklidian norm between vectors
+  // Compute 2-norm between vectors
   PetscCall(VecAXPY(y_test,-1.0,test_prediction));
   PetscCall(VecNorm(y_test,NORM_2,&error));
   //////////////////////////////////////////////////////////////////////////////
@@ -259,7 +262,7 @@ int main(int argc,char **args)
                         t_stop_solve - t_start_solve,
                         t_stop_predict - t_start_predict,
                         error / n_test));
-  // Free work space -> All PETSc objects should be destroyed when they are no longer needed.
+  // Free work space
   PetscCall(VecDestroy(&y_train));
   PetscCall(VecDestroy(&y_test));
   PetscCall(VecDestroy(&alpha));

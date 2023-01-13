@@ -32,7 +32,7 @@ rm $OUTPUT_FILE_DATA
 LOOP=5
 # Run cores_script from 1 to 256 cores
 START=1
-END=256
+END=128
 STEP=2
 N_TRAIN=20000
 N_TEST=5000
