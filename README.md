@@ -33,7 +33,7 @@ Install PETSc manually:
 ## Compile and Run Benchmark
 
 Benchmark Script:  
-`cd && cd petsc_project && git pull --rebase && ./run_benchmarks.sh Release/Debug`  
+`cd && cd petsc_project && git pull --rebase && ./run_benchmarks.sh release/debug cpu/blas`  
 
 ## Git Commands for Developing
 
