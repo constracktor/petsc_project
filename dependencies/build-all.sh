@@ -49,8 +49,11 @@ mkdir -p ${SOURCE_ROOT} ${INSTALL_ROOT}
 ################################################################################
 # Build tools
 ################################################################################
-echo "Building GCC"
+#echo "Building GCC"
 #./build-gcc.sh
+
+echo "Building MKL"
+./build-mkl.sh
 
 echo "Building Python"
 ./build-python.sh

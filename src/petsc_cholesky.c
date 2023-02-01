@@ -42,9 +42,21 @@ PetscScalar compute_covariance_function(PetscInt n_regressors,
 }
 
 int main(int argc,char **args)
-{
-  // Petsc structures
-  PetscInt       n_cores,scanned_elements;
+{   
+  // Get and set problem size parameters
+  PetscInt       n_train = 1 * 1000;  //max 100*1000
+  PetscInt       n_test = 1 * 1000;   //max 5*1000
+  PetscInt       n_regressors = 100;
+  PetscInt       n_cores = 2;
+  // Petsc initialization
+  PetscCall(PetscInitialize(&argc,&args,(char*)0,PETSC_NULL));
+  // Get parameters
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&n_cores));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_train",&n_train,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_test",&n_test,NULL));
+  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_regressors",&n_regressors,NULL));
+  // More Petsc structures
+  PetscInt       scanned_elements;
   PetscInt       i,j;
   PetscInt       rstart_train,rend_train,n_train_local;
   PetscInt       rstart_test,rend_test,n_test_local;
@@ -70,12 +82,7 @@ int main(int argc,char **args)
   FILE    *test_input_file;
   FILE    *test_output_file;
   //////////////////////////////////////////////////////////////////////////////
-  // Get and set parameters
-  // determine problem size
-  PetscInt       n_train = 1 * 1000;  //max 100*1000
-  PetscInt       n_test = 1 * 1000;   //max 5*1000
-  // GP parameters
-  PetscInt       n_regressors = 100;
+  // GP hyperparameters
   PetscScalar    hyperparameters[3];
   // initalize hyperparameters to empirical moments of the data
   hyperparameters[0] = 1.0;   // lengthscale = variance of training_output
@@ -123,13 +130,6 @@ int main(int argc,char **args)
   fclose(test_output_file);
   //////////////////////////////////////////////////////////////////////////////
   // PETSc
-  // Petsc initialization
-  PetscCall(PetscInitialize(&argc,&args,(char*)0,PETSC_NULL));
-  // Get parameters
-  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&n_cores));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_train",&n_train,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_test",&n_test,NULL));
-  PetscCall(PetscOptionsGetInt(NULL,NULL,"-n_regressors",&n_regressors,NULL));
   // Create Petsc structures
   // Create vector y_train
   PetscCall(VecCreate(PETSC_COMM_WORLD,&y_train));

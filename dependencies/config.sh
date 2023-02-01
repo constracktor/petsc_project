@@ -7,6 +7,9 @@ export SOURCE_ROOT=${PETSC_ROOT}/src
 # GCC - not used
 export GCC_VERSION=10.3.0
 
+# MKL version 
+export MKL_VERSION=2023.0.0
+
 # Python
 export PYTHON_VERSION=3.10.6
 
