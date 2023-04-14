@@ -53,7 +53,7 @@ mkdir -p ${SOURCE_ROOT} ${INSTALL_ROOT}
 #./build-gcc.sh
 
 echo "Building MKL"
-./build-mkl.sh
+#./build-mkl.sh
 
 echo "Building Python"
 ./build-python.sh
