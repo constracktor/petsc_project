@@ -1,9 +1,24 @@
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 SHELL ["/bin/bash","-c"]
 
-# install essentials
-RUN apt-get update -y && apt-get install -y git build-essential wget xz-utils bzip2 libz-dev gfortran libboost-all-dev
+# clone repository
+RUN apt-get update -y && apt-get install -y git 
+RUN git clone https://github.com/constracktor/petsc_project.git
+
+# Prevent image from asking time-zone
+RUN cd petsc_project && chmod +x inittimezone && cp inittimezone /usr/local/bin/inittimezone
+RUN /usr/local/bin/inittimezone
+
+# install essentials for PETSc
+RUN apt-get install -y git build-essential wget xz-utils bzip2 libz-dev gfortran libboost-all-dev
+
+# specific requirements OpenMPI
+RUN apt-get install -y m4 autoconf automake libtool-bin flex perl python3
+
+# specific requirements HPX
+RUN apt-get install -y wget xz-utils bzip2 libz-dev
+
 
 # install dev tools (not necessary to run benchmark script)
 RUN apt-get install -y vim
