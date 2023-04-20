@@ -1,27 +1,27 @@
 #!/bin/bash
-# Set variables
+# Set variables depending on petsc installation
 export OMPI_MCA_btl_vader_single_copy_mechanism=none
-export PETSC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/dependencies/src/petsc"
+export PETSC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd )/../petsc_installations/$1/src/petsc" 
 export RUN_COMMAND="${PETSC_DIR}/lib/petsc/bin/petscmpiexec"
 # decide for release or debug config (dependant on PETSc installation)
-if [[ "$1" == "release" ]]
+if [[ "$2" == "release" ]]
 then
     DEBUGGING=0
-    export PETSC_ARCH=arch-linux-cxx-opt
-elif [[ "$1" == "debug" ]]
+    export PETSC_ARCH=arch-linux-c-opt
+elif [[ "$2" == "debug" ]]
 then
     DEBUGGING=1
-    export PETSC_ARCH=arch-linux-cxx-debug
+    export PETSC_ARCH=arch-linux-c-debug
 else
     echo "Please specify PETSc installation: release or debug"
     exit 1
 fi
 # decide to run blas benchmark or on cpu script
-if [[ "$2" == "cpu" ]]
+if [[ "$3" == "cpu" ]]
 then
     CPU=1
     BLAS=0
-elif [[ "$2" == "blas" ]]
+elif [[ "$3" == "blas" ]]
 then
     CPU=0
     BLAS=1
